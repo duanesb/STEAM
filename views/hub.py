@@ -1,14 +1,21 @@
 import flet as ft
-from views.simOhm import Ohm_View
 from views.intro import Intro_View
+from views.simOhm import Ohm_View
+from views.simCapacitance import Capacitance_View
+from views.simElecField import Electric_View
+from views.simResistance import Resistance_View
 
 class Router:
     def __init__(self, page, ft):
         self.page = page
         self.ft = ft
         self.routes = {
-            "/ohm" : Ohm_View(page),
             "/intro" : Intro_View(page),
+            "/ohm" : Ohm_View(page),
+            "/capacitance" : Capacitance_View(page),
+            "/electric" : Electric_View(page),
+            "/resistance" : Resistance_View(page),
+            
         }
         self.body = ft.Container(content=self.routes['/intro'])
 

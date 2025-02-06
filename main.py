@@ -18,7 +18,7 @@ def main(page: ft.Page):
     router = Router(page, ft)
     page.theme_mode = ft.ThemeMode.LIGHT
     page.title = 'Physics Simulators'
-    page.window.width = 600
+    page.window.width = 800
     page.window.height = 800
     page.bgcolor = '#632dee'
     page.scroll = True
