@@ -17,8 +17,8 @@ def Intro_View(router):
                 ]),
 
                 ft.Column(spacing=30,controls=[
-                    ft.Container(on_click=lambda _: router.go('/electric'), content=ft.Column(controls=[
-                        ft.Text("Electric Field", size=30, weight="bold"),
+                    ft.Container(on_click=lambda _: router.go('/magnetic'), content=ft.Column(controls=[
+                        ft.Text("Magnetic Field", size=30, weight="bold"),
                     ], alignment=ft.MainAxisAlignment.CENTER, 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER)),
                     ft.Container(on_click=lambda _: router.go('/resistance'), content=ft.Column(controls=[
