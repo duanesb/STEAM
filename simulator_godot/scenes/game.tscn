@@ -1,0 +1,49 @@
+[gd_scene load_steps=4 format=3 uid="uid://df4e838hp5vad"]
+
+[ext_resource type="PackedScene" uid="uid://bk5d8dmvpsq2a" path="res://scenes/player.tscn" id="1_toj7i"]
+
+[sub_resource type="GDScript" id="GDScript_agev6"]
+script/source = "extends CharacterBody2D
+
+
+const SPEED = 300.0
+const JUMP_VELOCITY = -400.0
+
+
+func _physics_process(delta: float) -> void:
+	# Add the gravity.
+	if not is_on_floor():
+		velocity += get_gravity() * delta
+
+	# Handle jump.
+	if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	# Get the input direction and handle the movement/deceleration.
+	# As good practice, you should replace UI actions with custom gameplay actions.
+	var direction := Input.get_axis(\"ui_left\", \"ui_right\")
+	if direction:
+		velocity.x = direction * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+
+	move_and_slide()
+"
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_b5f3l"]
+distance = -11.0
+
+[node name="Game" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_toj7i")]
+position = Vector2(16, 22)
+script = SubResource("GDScript_agev6")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position = Vector2(0, -5)
+zoom = Vector2(4, 4)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Player"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/StaticBody2D"]
+shape = SubResource("WorldBoundaryShape2D_b5f3l")
