@@ -1,6 +1,19 @@
 import flet as ft
 
-class Button(ft.ElevatedButton):
-    def __init__(self):
+def onHoverSimButton(e):
+    e.control.bgcolor = "#c9c9c9" if e.data == "true" else "#d9d9d9"
+    e.control.update()
+
+class SimulatorButton(ft.Container):
+    def __init__(self,text,image,function):
         super().__init__()
-        
+        self.content= ft.Column(
+            controls=[
+                ft.Text(text,size=30,weight="bold"),
+                ft.Image(image,width=200)
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        self.on_click=function
+        self.on_hover= onHoverSimButton
+        self.padding=ft.padding.only(5,5,5,0)

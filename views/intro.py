@@ -1,6 +1,33 @@
 import flet as ft
+from objects import SimulatorButton
 
 def Intro_View(router):
+    content2 = ft.Container(
+        content= ft.Column(
+            controls=[
+                ft.Text("Simulators", size=55, weight="bold"),
+                ft.Row(
+                    controls=[
+                        SimulatorButton("Ohm's Law","ohmsLaw.png",lambda e:router.go('/ohm')),
+                        SimulatorButton("Magnetic Field","magneticField.png",lambda e:router.go('/magnetic')),
+                        SimulatorButton("Capacitance","capacitance.png",lambda e:router.go('/capacitance')),
+                        SimulatorButton("Resistance","resistors.png",lambda e:router.go('/resistance'))
+                    ],
+                    width=600,
+                    wrap=True,
+                    spacing=100,
+                    alignment=ft.MainAxisAlignment.CENTER
+                )
+            ],
+            spacing=25,
+            alignment= ft.MainAxisAlignment.CENTER,
+            horizontal_alignment= ft.CrossAxisAlignment.CENTER
+        ),
+        bgcolor="#d9d9d9",
+        width=800,
+        height=800,
+        padding=0
+    )
     content = ft.Container(
         content=ft.Column(spacing=25,controls=[
             ft.Row(controls=[ft.Text("Simulators", size=35, weight="bold")],alignment=ft.MainAxisAlignment.CENTER),
@@ -33,4 +60,4 @@ def Intro_View(router):
             ])
         ])
     )
-    return content
+    return content2
