@@ -9,10 +9,7 @@ import flet as ft
 
 from views.hub import Router
 
-import pygame
-
-#? flet run main.py -r 
-
+# import pygame
 
 def main(page: ft.Page):
     router = Router(page, ft)
@@ -28,9 +25,7 @@ def main(page: ft.Page):
     page.add(
         router.body,
     )
-
     router.page = page
-    
     page.go('/intro')
 
 ft.app(target=main, assets_dir="assets")

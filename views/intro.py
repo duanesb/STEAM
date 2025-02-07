@@ -8,10 +8,12 @@ def Intro_View(router):
                 ft.Column(spacing=30,controls=[
                     ft.Container(on_click=lambda _: router.go('/ohm'), content=ft.Column(controls=[
                         ft.Text("Ohm's Law", size=30, weight="bold"),
+                        ft.Image(src="Ohm-intro.png", width=200, height=200, fit="contain"),
                 ],alignment=ft.MainAxisAlignment.CENTER, 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER)),
                     ft.Container(on_click=lambda _: router.go('/capacitance'), content=ft.Column(controls=[
                         ft.Text("Capacitance", size=30, weight="bold"),
+                        ft.Image(src="Capacitance-intro.png", width=200, height=200, fit="contain"),
                     ], alignment=ft.MainAxisAlignment.CENTER, 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER)),
                 ]),
@@ -19,10 +21,12 @@ def Intro_View(router):
                 ft.Column(spacing=30,controls=[
                     ft.Container(on_click=lambda _: router.go('/magnetic'), content=ft.Column(controls=[
                         ft.Text("Magnetic Field", size=30, weight="bold"),
+                        ft.Image(src="Magnetic-intro.png", width=200, height=200, fit="contain"),
                     ], alignment=ft.MainAxisAlignment.CENTER, 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER)),
                     ft.Container(on_click=lambda _: router.go('/resistance'), content=ft.Column(controls=[
                         ft.Text("Resistance", size=30, weight="bold"),
+                        ft.Image(src="Resistance-intro.png", width=200, height=200, fit="contain"),
                     ], alignment=ft.MainAxisAlignment.CENTER, 
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER)),
                 ])
