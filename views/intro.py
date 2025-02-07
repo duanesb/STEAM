@@ -13,20 +13,20 @@ def Intro_View(router):
                         SimulatorButton("Capacitance","capacitance.png",lambda e:router.go('/capacitance')),
                         SimulatorButton("Resistance","resistors.png",lambda e:router.go('/resistance'))
                     ],
-                    width=600,
+                    width=700,
                     wrap=True,
-                    spacing=100,
+                    spacing=30,
+                    run_spacing=30,
                     alignment=ft.MainAxisAlignment.CENTER
                 )
             ],
-            spacing=25,
-            alignment= ft.MainAxisAlignment.CENTER,
+            spacing=30,
+            alignment= ft.MainAxisAlignment.START,
             horizontal_alignment= ft.CrossAxisAlignment.CENTER
         ),
-        bgcolor="#d9d9d9",
         width=800,
         height=800,
-        padding=0
+        padding=ft.padding.only(top=20)
     )
     content = ft.Container(
         content=ft.Column(spacing=25,controls=[
