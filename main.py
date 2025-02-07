@@ -2,8 +2,6 @@ import flet as ft
 
 from views.hub import Router
 
-# import pygame
-
 def main(page: ft.Page):
     router = Router(page, ft)
     page.theme_mode = ft.ThemeMode.LIGHT
