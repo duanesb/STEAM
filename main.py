@@ -1,10 +1,3 @@
-import asyncio
-import platform
-
-if platform.system() == "Darwin":
-    import uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
 import flet as ft
 
 from views.hub import Router
