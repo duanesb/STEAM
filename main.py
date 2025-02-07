@@ -10,7 +10,7 @@ def main(page: ft.Page):
     page.title = 'Physics Simulators'
     page.window.width = 800
     page.window.height = 800
-    page.bgcolor = '#632dee'
+    page.bgcolor = '#c3bad9'
     page.scroll = True
     page.window.resizable = False
     page.on_route_change = router.route_change
