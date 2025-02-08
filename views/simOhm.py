@@ -13,4 +13,9 @@ def Ohm_View(router):
             ])
         ])
     )
+    content2 = ft.Container(
+        content=ft.Column(
+            
+        )
+    )
     return content
