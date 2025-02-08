@@ -7,10 +7,10 @@ def Intro_View(router):
         ft.Text("Simulators", size=55, weight="bold"),
         ft.Row(
             controls=[
-                SimulatorButton("Ohm's Law","ohmsLaw.png",lambda e:router.go('/ohm')),
-                SimulatorButton("Magnetic Field","magneticField.png",lambda e:router.go('/magnetic')),
-                SimulatorButton("Capacitance","capacitance.png",lambda e:router.go('/capacitance')),
-                SimulatorButton("Resistance","resistors.png",lambda e:router.go('/resistance'))
+                SimulatorButton("Ohm's Law","Ohm-intro.png",lambda e:router.go('/ohm')),
+                SimulatorButton("Magnetic Field","Magnetic-intro.png",lambda e:router.go('/magnetic')),
+                SimulatorButton("Capacitance","Capacitance-intro.png",lambda e:router.go('/capacitance')),
+                SimulatorButton("Resistance","Resistance-intro.png",lambda e:router.go('/resistance'))
             ],
             width=700,
             wrap=True,
