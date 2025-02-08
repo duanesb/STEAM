@@ -26,7 +26,7 @@ def Magnetic_View(router):
     # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
-        magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,600-magnetWidth))
+        magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
     
     magnetContainer = ft.GestureDetector(
