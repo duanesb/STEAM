@@ -1,5 +1,4 @@
 import flet as ft
-
 from views.hub import Router
 
 #import pygame
