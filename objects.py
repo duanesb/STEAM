@@ -49,6 +49,6 @@ class ContentContainer(ft.Container):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
         self.width=800
-        self.height=800
+        self.height=750
         self.padding=ft.padding.only(top=20)
     
