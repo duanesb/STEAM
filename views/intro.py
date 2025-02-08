@@ -25,7 +25,7 @@ def Intro_View(router):
             horizontal_alignment= ft.CrossAxisAlignment.CENTER
         ),
         width=800,
-        height=800,
+        height=750,
         padding=ft.padding.only(top=20)
     )
     return content
