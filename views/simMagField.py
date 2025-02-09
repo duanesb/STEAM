@@ -30,7 +30,7 @@ def Magnetic_View(router):
         magnetContainer.update()
         for row in range(len(pointers)):
             for column in range(len(pointers[row])):
-                pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan((magnetContainer.top-pointers[row][column]["absY"])/(magnetContainer.left-pointers[row][column]["absX"]))+np.pi,ft.alignment.center)
+                pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-pointers[row][column]["absY"])/(magnetContainer.left-pointers[row][column]["absX"]))+np.pi,ft.alignment.center)
                 pointers[row][column]["container"].update()
 
         # pointers[0][0]["container"].rotate = ft.transform.Rotate(np.arctan((magnetContainer.top-pointers[0][0]["absY"])/(magnetContainer.left-pointers[0][0]["absX"]))+np.pi,ft.alignment.center)
