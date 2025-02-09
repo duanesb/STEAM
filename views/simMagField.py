@@ -5,10 +5,10 @@ from objects import BackElevatedButton,ContentContainer
 def Magnetic_View(router):
     # CREATES THE MAGNETIC POINTERS
     pointers=[]
-    rows = 8
+    rows = 10
     columns = 9
-    containerWidth = 20
-    containerHeight = 5
+    containerWidth = 15
+    containerHeight = 2.5
     magnetWidth = 125
     magnetHeight = 50
 
@@ -25,12 +25,23 @@ def Magnetic_View(router):
 
     # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
-        magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
+        magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,490-magnetHeight))
         magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
         for row in range(len(pointers)):
             for column in range(len(pointers[row])):
-                pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-pointers[row][column]["absY"])/(magnetContainer.left-pointers[row][column]["absX"]))+np.pi,ft.alignment.center)
+                yValue = pointers[row][column]["absY"]
+                xValue = pointers[row][column]["absX"]
+                if(
+                    abs(np.hypot(magnetContainer.top+magnetHeight/2-yValue,magnetContainer.left-xValue)) <
+                    abs(np.hypot(magnetContainer.top+magnetHeight/2-yValue,magnetContainer.left+magnetWidth-xValue))
+                ):
+                    pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-yValue)/(magnetContainer.left-xValue))+np.pi,ft.alignment.center)
+                else:
+                    pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-yValue)/(magnetContainer.left-xValue+magnetWidth))+np.pi,ft.alignment.center)
+
+                # if(np.sqrt((magnetContainer.top+magnetHeight/2-pointers[row][column]["absY"])**2 + (magnetContainer.left))):
+
                 pointers[row][column]["container"].update()
 
         # pointers[0][0]["container"].rotate = ft.transform.Rotate(np.arctan((magnetContainer.top-pointers[0][0]["absY"])/(magnetContainer.left-pointers[0][0]["absX"]))+np.pi,ft.alignment.center)
@@ -62,14 +73,14 @@ def Magnetic_View(router):
             content=ft.Column(
                 controls=[
                     ft.Container(
-                        width=600,height=400,bgcolor="white", margin=0,padding=0,
+                        width=600,height=490,bgcolor="white", margin=0,padding=0,
                         content=ft.Stack(
                             controls=[
                                 *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
                                 magnetContainer
                             ]
-                        )),
-                    ft.Container(width=600,height=90,bgcolor="#7a7094",border=ft.border.only(top=ft.BorderSide(5,"#201b2e"))),
+                        )
+                    ),
                 ],
                 spacing=0
             )
