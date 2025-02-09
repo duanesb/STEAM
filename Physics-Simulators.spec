@@ -45,6 +45,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='Physics Simulators.app',
-    icon=None,
+    icon='App_Icon.png',
     bundle_identifier=None,
 )
