@@ -7,5 +7,8 @@ PyInstaller.__main__.run([
     '--noconsole',
     '--onedir',
     '--add-data=assets:assets',
-    # '--icon=', #! Remember to add the icon file directory
+    '--icon=App_Icon.png',
 ])
+
+
+#! Remember that to reload using the spec, you use: pyinstaller Physics-Simulators.spec

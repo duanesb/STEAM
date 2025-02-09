@@ -5,7 +5,6 @@ import sys
 import os
 
 def get_asset_path(filename):
-    """Returns the correct path for assets, adjusting for PyInstaller on macOS."""
     if getattr(sys, 'frozen', False):
         base_path = os.path.join(sys._MEIPASS, "assets")
     else: base_path = ""
