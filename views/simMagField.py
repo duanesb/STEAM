@@ -28,10 +28,17 @@ def Magnetic_View(router):
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
         magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
+        for row in range(len(pointers)):
+            for column in range(len(pointers[row])):
+                pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan((magnetContainer.top-pointers[row][column]["absY"])/(magnetContainer.left-pointers[row][column]["absX"]))+np.pi,ft.alignment.center)
+                pointers[row][column]["container"].update()
+
+        # pointers[0][0]["container"].rotate = ft.transform.Rotate(np.arctan((magnetContainer.top-pointers[0][0]["absY"])/(magnetContainer.left-pointers[0][0]["absX"]))+np.pi,ft.alignment.center)
+        # pointers[0][0]["container"].update()
     
     magnetContainer = ft.GestureDetector(
-        left=300,
-        top=200,
+        left=300-magnetWidth/2,
+        top=200-magnetHeight/2,
         content=ft.Container(
             width=magnetWidth,
             height=magnetHeight,
