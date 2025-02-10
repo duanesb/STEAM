@@ -1,7 +1,16 @@
 import flet as ft
+import pygame
+
+pygame.mixer.init()
+click_sound = pygame.mixer.Sound("assets/press.wav")
+hover_sound = pygame.mixer.Sound("assets/hover.wav")
 
 def onHoverSimButton(e):
-    e.control.bgcolor = "#a99fc2" if e.data == "true" else "#c3bad9"
+    if e.data == "true":
+        e.control.bgcolor = "#a99fc2"
+        hover_sound.play() 
+    else: 
+        e.control.bgcolor = "#c3bad9"
     e.control.update()
 
 def clickfix(e):
@@ -20,7 +29,7 @@ class SimulatorButton(ft.Container):
         )
         self.width=280
         self.border = ft.border.all(5,"#b4abc9")
-        self.on_click = lambda e: (function(e), clickfix(e))
+        self.on_click = lambda e: (function(e), clickfix(e),click_sound.play())
         self.on_hover= onHoverSimButton
         self.padding=ft.padding.only(5,5,5,0)
 
