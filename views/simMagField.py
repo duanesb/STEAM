@@ -6,16 +6,16 @@ def Magnetic_View(router):
     # CREATES THE MAGNETIC POINTERS
     pointers=[]
     rows = 8
-    columns = 9
+    columns = 14
     containerWidth = 20
     containerHeight = 5
-    magnetWidth = 125
+    magnetWidth = 175
     magnetHeight = 50
 
     for row in range(rows):
         pointers.append([])
         for column in range(columns):
-            x = 40 + 60 * column
+            x = 40 + 38 * column
             y= 40 + 45 * row
             container = ft.Container(
                 width=containerWidth,height=containerHeight,bgcolor="blue",
