@@ -1,5 +1,6 @@
 import flet as ft
 from views.hub import Router
+from objects import hover_sound, click_sound
 
 #import pygame
 
@@ -15,6 +16,8 @@ def main(page: ft.Page):
     page.on_route_change = router.route_change
     router.page = page
     page.add(
+        click_sound, 
+        hover_sound,
         router.body,
     )
     router.page = page

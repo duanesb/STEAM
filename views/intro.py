@@ -1,17 +1,5 @@
 import flet as ft
-from objects import SimulatorButton,ContentContainer
-
-import sys
-import os
-
-def get_asset_path(filename):
-    if getattr(sys, 'frozen', False):
-        base_path = os.path.join(sys._MEIPASS, "assets")
-    else: base_path = ""
-    
-    return os.path.join(base_path, filename)
-
-
+from objects import SimulatorButton,ContentContainer, get_asset_path
 
 def Intro_View(router):
     controls = [

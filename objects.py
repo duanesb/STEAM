@@ -1,9 +1,17 @@
 import flet as ft
-import pygame
 
-pygame.mixer.init()
-click_sound = pygame.mixer.Sound("assets/press.wav")
-hover_sound = pygame.mixer.Sound("assets/hover.wav")
+import sys
+import os
+
+def get_asset_path(filename):
+    if getattr(sys, 'frozen', False):
+        base_path = os.path.join(sys._MEIPASS, "assets")
+    else: base_path = ""
+    
+    return os.path.join(base_path, filename)
+
+click_sound = ft.Audio(get_asset_path("press.WAV"))
+hover_sound = ft.Audio(get_asset_path("hover.wav"))
 
 def onHoverSimButton(e):
     if e.data == "true":
