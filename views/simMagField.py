@@ -67,7 +67,7 @@ def Magnetic_View(router):
 
                 # VISUAL
                 opaLowBound = 4.75e-5
-                opaUppBound = 4e-3
+                opaUppBound = 3e-4
                 opaCheck = np.clip(strength,opaLowBound,opaUppBound)
                 opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
 
