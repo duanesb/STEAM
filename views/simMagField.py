@@ -17,10 +17,9 @@ def Magnetic_View(router):
         for column in range(columns):
             x = 40 + 38 * column
             y= 40 + 45 * row
-            container = ft.Image(
-                src="pointer.png",
+            container = ft.Container(
                 width=containerWidth, height=containerHeight,
-                left=x,top=y
+                bgcolor="white", left=x,top=y
             )
             pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
 
@@ -60,31 +59,24 @@ def Magnetic_View(router):
                 angle = np.atan2(netY,netX)
                 strength = np.hypot(netX,netY)
 
+                # VISUAL
+                opaLowBound = 4.75e-5
+                opaUppBound = 4e-3
+                opaCheck = np.clip(strength,opaLowBound,opaUppBound)
+                opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
+
                 # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
-                pointers[3][3]["container"].color = "red"
                 pointers[3][3]["container"].update()
                 if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
                     # print(f"\n{radiusNorth}\n{radiusSouth}")
                     print("{:.2e}".format(strength))
+                    print(opaScalar)
 
-                # VISUAL
-                opaLowBound = 1.4e-5
-                opaUppBound = 3.72e-1
-                opacityCheck = np.clip(strength,1.4e-5,3.72e-1)
+
+                # CHANGES
+                pointers[row][column]["container"].bgcolor = f"white,{opaScalar}"
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
                 pointers[row][column]["container"].update()
-
-                # distX, distY = pointerX-magnetX, pointerY-magnetY # DISTANCE BETWEEM COORDS
-                # radius = np.hypot(distX,distY) # RADIUS
-
-                # normX, normY = distX/radius, distY/radius
-
-                # x = (magnitude/radius**3)*(3*normX**2-1)
-                # y = ((3*magnitude)/radius**3)*(normX*normY)
-
-                # angle = np.atan2(y,x)
-                # pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
-                # pointers[row][column]["container"].update()
 
     
     magnetContainer = ft.GestureDetector(
