@@ -11,6 +11,9 @@ def Magnetic_View(router):
     containerHeight = 5.5
     magnetWidth = 40
     magnetHeight = 100
+    magStrength = 10
+
+    # STARTING MAGNITUDE
 
     for row in range(rows):
         pointers.append([])
@@ -25,8 +28,11 @@ def Magnetic_View(router):
 
     # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
-        global magnitude
-        magnitude = 10
+        nonlocal magStrength
+
+        # GET SCALAR MAGNITUDE
+        magnitude = (float(magStrength))/(1400-9)*50
+
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
         magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
@@ -68,16 +74,18 @@ def Magnetic_View(router):
                 # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
                 pointers[3][3]["container"].update()
                 if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
-                    # print(f"\n{radiusNorth}\n{radiusSouth}")
                     print("{:.2e}".format(strength))
-                    print(opaScalar)
 
-
-                # CHANGES
+                # VISUAL CHANGES
                 pointers[row][column]["container"].bgcolor = f"white,{opaScalar}"
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
                 pointers[row][column]["container"].update()
 
+    def updateMagStrength(e):
+        nonlocal magStrength
+        magStrength = int(e.control.value)
+        magStrengthText.value = f"{magStrength} mT"
+        magStrengthText.update()
     
     magnetContainer = ft.GestureDetector(
         left=300-magnetWidth/2,
@@ -103,6 +111,12 @@ def Magnetic_View(router):
         on_pan_update=moveContainer
     )
 
+    magStrengthText = ft.Text(
+        "10mT",size=22,weight="bold",color="white",
+        left=470,top=15,
+        style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
+    )
+
     controls = [
         ft.Text("Magnetic Field", size=55, weight="bold"),
         ft.Container(
@@ -118,7 +132,23 @@ def Magnetic_View(router):
                             ]
                         )
                     ),
-                    ft.Container(width=600,height=90,bgcolor="#706394",border=ft.border.only(top=ft.BorderSide(5,"black")))
+                    ft.Container(width=600,height=90,bgcolor="#706394",border=ft.border.only(top=ft.BorderSide(5,"black")),
+                        content=ft.Stack(
+                            controls=[
+                                ft.Text(
+                                    "Magnet Strength:",weight="bold",size=22, color="black",width=135,
+                                    left=345,top=11
+                                ),
+                                ft.Slider(
+                                    min=10,max=1400,divisions=100,
+                                    width=140,
+                                    left=455,top=40,
+                                    active_color="#ab9dd4", on_change=updateMagStrength
+                                ),
+                                magStrengthText
+                            ]
+                        )
+                    )
                 ],
                 spacing=0
             )
