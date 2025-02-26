@@ -7,40 +7,47 @@ def Magnetic_View(router):
     pointers=[]
     rows = 8
     columns = 14
-    containerWidth = 20
-    containerHeight = 5
-    magnetWidth = 175
-    magnetHeight = 50
+    containerWidth = 22
+    containerHeight = 5.5
+    magnetWidth = 100
+    magnetHeight = 40
 
     for row in range(rows):
         pointers.append([])
         for column in range(columns):
             x = 40 + 38 * column
             y= 40 + 45 * row
-            container = ft.Container(
-                width=containerWidth,height=containerHeight,bgcolor="blue",
+            container = ft.Image(
+                src="pointer.png",
+                width=containerWidth, height=containerHeight,
                 left=x,top=y
             )
             pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
 
     # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
+        global magnitude
+        magnitude = 10
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
         magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
         for row in range(len(pointers)):
             for column in range(len(pointers[row])):
-                yValue = pointers[row][column]["absY"]
-                xValue = pointers[row][column]["absX"]
-                if(
-                    abs(np.hypot(magnetContainer.top+magnetHeight/2-yValue,magnetContainer.left-xValue)) <
-                    abs(np.hypot(magnetContainer.top+magnetHeight/2-yValue,magnetContainer.left+magnetWidth-xValue))
-                ):
-                    pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-yValue)/(magnetContainer.left-xValue))+np.pi,ft.alignment.center)
-                else:
-                    pointers[row][column]["container"].rotate = ft.transform.Rotate(np.arctan(((magnetContainer.top+magnetHeight/2)-yValue)/(magnetContainer.left-xValue+magnetWidth))+np.pi,ft.alignment.center)
+                magnetX, magnetY = magnetContainer.left+magnetWidth/2, magnetContainer.top+magnetHeight/2 # CENTERS
+                pointerX, pointerY = pointers[row][column]["absX"], pointers[row][column]["absY"] # CENTERS
 
+                distX, distY = pointerX-magnetX, pointerY-magnetY # DISTANCE BETWEEM COORDS
+                radius = np.hypot(distX,distY) # RADIUS
+
+                normX, normY = distX/radius, distY/radius
+
+                x = (magnitude/radius**3)*(3*normX**2-1)
+                y = ((3*magnitude)/radius**3)*(normX*normY)
+
+                angle = np.atan2(y,x)
+                pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
                 pointers[row][column]["container"].update()
+
     
     magnetContainer = ft.GestureDetector(
         left=300-magnetWidth/2,
@@ -51,8 +58,8 @@ def Magnetic_View(router):
             border=ft.border.all(5,"black"),
             content=ft.Row(
                 controls=[
-                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="red"),
-                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="white")
+                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="blue"),
+                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="red")
                 ],
                 spacing=0
             )
@@ -68,7 +75,7 @@ def Magnetic_View(router):
             content=ft.Column(
                 controls=[
                     ft.Container(
-                        width=600,height=400,bgcolor="white", margin=0,padding=0,
+                        width=600,height=400,bgcolor="black", margin=0,padding=0,
                         content=ft.Stack(
                             controls=[
                                 *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
