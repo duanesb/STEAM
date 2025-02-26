@@ -9,8 +9,8 @@ def Magnetic_View(router):
     columns = 14
     containerWidth = 22
     containerHeight = 5.5
-    magnetWidth = 100
-    magnetHeight = 40
+    magnetWidth = 40
+    magnetHeight = 100
 
     for row in range(rows):
         pointers.append([])
@@ -35,18 +35,44 @@ def Magnetic_View(router):
             for column in range(len(pointers[row])):
                 magnetX, magnetY = magnetContainer.left+magnetWidth/2, magnetContainer.top+magnetHeight/2 # CENTERS
                 pointerX, pointerY = pointers[row][column]["absX"], pointers[row][column]["absY"] # CENTERS
+                northX, northY = magnetX, magnetY-magnetHeight/2
+                southX, southY = magnetX, magnetY+magnetHeight/2
 
-                distX, distY = pointerX-magnetX, pointerY-magnetY # DISTANCE BETWEEM COORDS
-                radius = np.hypot(distX,distY) # RADIUS
+                # NORTH POLE CALCULATIONS
+                deltaPxNx = pointerX - northX
+                deltaPyNy = pointerY - northY
+                radiusNorth = np.hypot(deltaPxNx,deltaPyNy)
+                normNx, normNy = deltaPxNx/radiusNorth, deltaPyNy/radiusNorth
+                northX = magnitude/(radiusNorth**2) * normNx
+                northY = magnitude/(radiusNorth**2) * normNy
 
-                normX, normY = distX/radius, distY/radius
+                # SOUTH POLE CALCULATIONS
+                deltaPxSx = pointerX - southX
+                deltaPySy = pointerY - southY
+                radiusSouth = np.hypot(deltaPxSx,deltaPySy)
+                normSx, normSy = deltaPxSx/radiusSouth, deltaPySy/radiusSouth
+                southX = -magnitude/(radiusSouth**2) * normSx
+                southY = -magnitude/(radiusSouth**2) * normSy
 
-                x = (magnitude/radius**3)*(3*normX**2-1)
-                y = ((3*magnitude)/radius**3)*(normX*normY)
+                # NET
+                netX = northX + southX
+                netY = northY + southY
+                angle = np.atan2(netY,netX)
 
-                angle = np.atan2(y,x)
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
                 pointers[row][column]["container"].update()
+
+                # distX, distY = pointerX-magnetX, pointerY-magnetY # DISTANCE BETWEEM COORDS
+                # radius = np.hypot(distX,distY) # RADIUS
+
+                # normX, normY = distX/radius, distY/radius
+
+                # x = (magnitude/radius**3)*(3*normX**2-1)
+                # y = ((3*magnitude)/radius**3)*(normX*normY)
+
+                # angle = np.atan2(y,x)
+                # pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
+                # pointers[row][column]["container"].update()
 
     
     magnetContainer = ft.GestureDetector(
@@ -58,8 +84,13 @@ def Magnetic_View(router):
             border=ft.border.all(5,"black"),
             content=ft.Row(
                 controls=[
-                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="blue"),
-                    ft.Container(width=magnetWidth/2 - 5,height=magnetHeight,bgcolor="red")
+                    ft.Column(
+                        controls=[
+                            ft.Container(width=magnetWidth - 5,height=magnetHeight/2,bgcolor="red"),
+                            ft.Container(width=magnetWidth - 5,height=magnetHeight/2,bgcolor="blue")
+                        ],
+                        spacing=0
+                    )
                 ],
                 spacing=0
             )
