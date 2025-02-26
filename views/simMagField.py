@@ -58,7 +58,19 @@ def Magnetic_View(router):
                 netX = northX + southX
                 netY = northY + southY
                 angle = np.atan2(netY,netX)
+                strength = np.hypot(netX,netY)
 
+                # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
+                pointers[3][3]["container"].color = "red"
+                pointers[3][3]["container"].update()
+                if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
+                    # print(f"\n{radiusNorth}\n{radiusSouth}")
+                    print("{:.2e}".format(strength))
+
+                # VISUAL
+                opaLowBound = 1.4e-5
+                opaUppBound = 3.72e-1
+                opacityCheck = np.clip(strength,1.4e-5,3.72e-1)
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
                 pointers[row][column]["container"].update()
 
@@ -86,8 +98,8 @@ def Magnetic_View(router):
                 controls=[
                     ft.Column(
                         controls=[
-                            ft.Container(width=magnetWidth - 5,height=magnetHeight/2,bgcolor="red"),
-                            ft.Container(width=magnetWidth - 5,height=magnetHeight/2,bgcolor="blue")
+                            ft.Container(width=magnetWidth - 10,height=magnetHeight/2,bgcolor="red"),
+                            ft.Container(width=magnetWidth - 10,height=magnetHeight/2,bgcolor="blue")
                         ],
                         spacing=0
                     )
