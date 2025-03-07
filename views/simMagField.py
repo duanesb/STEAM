@@ -49,11 +49,6 @@ def Magnetic_View(router):
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
         opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
-
-        # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
-        # pointers[3][3]["container"].update()
-        # if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
-            # print("{:.2e}".format(strength))
         
         return {"opacity":opaScalar,"angle":angle,"strength":strength}
 
@@ -72,8 +67,6 @@ def Magnetic_View(router):
     # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
         nonlocal magStrength
-
-        # GET SCALAR MAGNITUDE
         magnitude = magStrength
 
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
@@ -87,12 +80,8 @@ def Magnetic_View(router):
                 pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
                 pointers[row][column]["container"].update()
-
-                # TEST
-                # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
-                # pointers[3][3]["container"].update()
-                # if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
-                    # print("{:.2e}".format(changes["strength"]))
+        
+        updateStrengthReading()
 
     def updateMagStrength(e):
         nonlocal magStrength
@@ -105,13 +94,21 @@ def Magnetic_View(router):
                 changes = calculatePhysics(magnetContainer.left,magnetContainer.top,pointers[row][column]["absX"],pointers[row][column]["absY"],magStrength)
                 pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
                 pointers[row][column]["container"].update()
+        
+        updateStrengthReading()
+
     
     def hideAnchorMenu(e):
-        magnetStrengthContainerText.value = "0 mT"
+        updateStrengthReading()
         anchorMenu.visible = False
         anchorSim.visible = True
         anchorMenu.update()
         anchorSim.update()
+    
+    def updateStrengthReading():
+        nonlocal magStrength
+        information = calculatePhysics(magnetContainer.left,magnetContainer.top,anchorSim.left+12.5,anchorSim.top+12.5,magStrength)
+        magnetStrengthContainerText.value = f"{information["strength"]:.4e}"
         magnetStrengthContainerText.update()
     
     def hideAnchorSim(e):
@@ -126,6 +123,7 @@ def Magnetic_View(router):
         anchorSim.top = max(0, min(anchorSim.top + e.delta_y,400-25))
         anchorSim.left = max(0, min(anchorSim.left + e.delta_x,590-25))
         anchorSim.update()
+        updateStrengthReading()
     
     magnetContainer = ft.GestureDetector(
         left=300-magnetWidth/2,
