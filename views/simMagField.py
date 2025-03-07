@@ -13,8 +13,52 @@ def Magnetic_View(router):
     magnetHeight = 100
     magStrength = 10
 
-    # STARTING MAGNITUDE
+    opaLowBound = 4.75e-5
+    opaUppBound = 3e-4
 
+    # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, STRENGTH DIRECTION)
+    def calculatePhysics(magnetLeft,magnetTop,pointX,pointY,rawMagStrength):
+        nonlocal opaLowBound,opaUppBound
+        magnetX, magnetY = magnetLeft+magnetWidth/2, magnetTop+magnetHeight/2
+        northX, northY = magnetX, magnetY-magnetHeight/2
+        southX, southY = magnetX, magnetY+magnetHeight/2
+        magnitude = (float(rawMagStrength))/(1400-9)*50
+
+        # NORTH POLE CALCULATIONS
+        deltaPxNx = pointX - northX
+        deltaPyNy = pointY - northY
+        radiusNorth = np.hypot(deltaPxNx,deltaPyNy)
+        normNx, normNy = deltaPxNx/radiusNorth, deltaPyNy/radiusNorth
+        northX = magnitude/(radiusNorth**2) * normNx
+        northY = magnitude/(radiusNorth**2) * normNy
+
+        # SOUTH POLE CALCULATIONS
+        deltaPxSx = pointX - southX
+        deltaPySy = pointY - southY
+        radiusSouth = np.hypot(deltaPxSx,deltaPySy)
+        normSx, normSy = deltaPxSx/radiusSouth, deltaPySy/radiusSouth
+        southX = -magnitude/(radiusSouth**2) * normSx
+        southY = -magnitude/(radiusSouth**2) * normSy
+
+        # NET
+        netX = northX + southX
+        netY = northY + southY
+        angle = np.atan2(netY,netX)
+        strength = np.hypot(netX,netY)
+
+        # VISUAL
+        opaCheck = np.clip(strength,opaLowBound,opaUppBound)
+        opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
+
+        # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
+        pointers[3][3]["container"].update()
+        if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
+            # print("{:.2e}".format(strength))
+            pass
+        
+        return {"opacity":opaScalar,"angle":angle,"strength":strength}
+
+    # CREATES POINTERS
     for row in range(rows):
         pointers.append([])
         for column in range(columns):
@@ -31,61 +75,52 @@ def Magnetic_View(router):
         nonlocal magStrength
 
         # GET SCALAR MAGNITUDE
-        magnitude = (float(magStrength))/(1400-9)*50
+        # magnitude = (float(magStrength))/(1400-9)*50
+        magnitude = magStrength
 
         magnetContainer.top = max(0, min(magnetContainer.top + e.delta_y,400-magnetHeight))
         magnetContainer.left = max(0, min(magnetContainer.left + e.delta_x,590-magnetWidth))
         magnetContainer.update()
         for row in range(len(pointers)):
             for column in range(len(pointers[row])):
-                magnetX, magnetY = magnetContainer.left+magnetWidth/2, magnetContainer.top+magnetHeight/2 # CENTERS
-                pointerX, pointerY = pointers[row][column]["absX"], pointers[row][column]["absY"] # CENTERS
-                northX, northY = magnetX, magnetY-magnetHeight/2
-                southX, southY = magnetX, magnetY+magnetHeight/2
+                changes = calculatePhysics(magnetContainer.left,magnetContainer.top,pointers[row][column]["absX"],pointers[row][column]["absY"],magnitude)
+                
+                # VISUAL CHANGES
+                pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
+                pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
+                pointers[row][column]["container"].update()
 
-                # NORTH POLE CALCULATIONS
-                deltaPxNx = pointerX - northX
-                deltaPyNy = pointerY - northY
-                radiusNorth = np.hypot(deltaPxNx,deltaPyNy)
-                normNx, normNy = deltaPxNx/radiusNorth, deltaPyNy/radiusNorth
-                northX = magnitude/(radiusNorth**2) * normNx
-                northY = magnitude/(radiusNorth**2) * normNy
-
-                # SOUTH POLE CALCULATIONS
-                deltaPxSx = pointerX - southX
-                deltaPySy = pointerY - southY
-                radiusSouth = np.hypot(deltaPxSx,deltaPySy)
-                normSx, normSy = deltaPxSx/radiusSouth, deltaPySy/radiusSouth
-                southX = -magnitude/(radiusSouth**2) * normSx
-                southY = -magnitude/(radiusSouth**2) * normSy
-
-                # NET
-                netX = northX + southX
-                netY = northY + southY
-                angle = np.atan2(netY,netX)
-                strength = np.hypot(netX,netY)
-
-                # VISUAL
-                opaLowBound = 4.75e-5
-                opaUppBound = 3e-4
-                opaCheck = np.clip(strength,opaLowBound,opaUppBound)
-                opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
-
+                # TEST
                 # print(f"{pointers[3][3]["absX"]}, {pointers[3][3]["absY"]}")
                 pointers[3][3]["container"].update()
                 if(pointers[row][column]["absX"] == 165 and pointers[row][column]["absY"] == 177.75):
-                    print("{:.2e}".format(strength))
-
-                # VISUAL CHANGES
-                pointers[row][column]["container"].bgcolor = f"white,{opaScalar}"
-                pointers[row][column]["container"].rotate = ft.transform.Rotate(angle+np.pi)
-                pointers[row][column]["container"].update()
+                    # print("{:.2e}".format(changes["strength"]))
+                    pass
 
     def updateMagStrength(e):
         nonlocal magStrength
         magStrength = int(e.control.value)
         magStrengthText.value = f"{magStrength} mT"
         magStrengthText.update()
+
+        for row in range(len(pointers)):
+            for column in range(len(pointers[row])):
+                changes = calculatePhysics(magnetContainer.left,magnetContainer.top,pointers[row][column]["absX"],pointers[row][column]["absY"],magStrength)
+                pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
+                pointers[row][column]["container"].update()
+
+        # # OPACITY
+        # print(strength)
+        # print(opaScalar)
+        # print()
+        # opaCheck = np.clip(strength,opaLowBound,opaUppBound)
+        # opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)
+
+        # for row in range(len(pointers)):
+        #     for column in range(len(pointers[row])):
+        #         pointers[row][column]["container"].bgcolor = f"white,{opaScalar}"
+        #         pointers[row][column]["container"].update()
+
     
     magnetContainer = ft.GestureDetector(
         left=300-magnetWidth/2,
