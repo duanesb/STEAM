@@ -69,3 +69,22 @@ class ContentContainer(ft.Container):
         self.height=750
         self.padding=ft.padding.only(top=20)
     
+class ContainerDivider(ft.Container):
+    def __init__(self,left,top):
+        super().__init__()
+        self.width=3
+        self.height=70
+        self.bgcolor="black"
+        self.border_radius=ft.border_radius.all(10)
+        self.left=left
+        self.top=top
+
+
+class ContainerText(ft.Text):
+    def __init__(self,text,size,left,top):
+        super().__init__(text)
+        self.weight="bold"
+        self.size=size
+        self.color="black"
+        self.left=left
+        self.top=top
