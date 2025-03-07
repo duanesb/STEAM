@@ -3,20 +3,19 @@ import numpy as np
 from objects import BackElevatedButton,ContentContainer,ContainerDivider,ContainerText
 
 def Magnetic_View(router):
-    # CREATES THE MAGNETIC POINTERS
     pointers=[]
     rows = 8
     columns = 14
     containerWidth = 22
     containerHeight = 5.5
-    magnetWidth = 40
-    magnetHeight = 100
+    magnetWidth = 45
+    magnetHeight = 105
     magStrength = 10
 
     opaLowBound = 4.75e-5
     opaUppBound = 3e-4
 
-    # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, STRENGTH DIRECTION)
+    # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, DIRECTION)
     def calculatePhysics(magnetLeft,magnetTop,pointX,pointY,rawMagStrength):
         nonlocal opaLowBound,opaUppBound
         magnetX, magnetY = magnetLeft+magnetWidth/2, magnetTop+magnetHeight/2
@@ -52,19 +51,6 @@ def Magnetic_View(router):
         
         return {"opacity":opaScalar,"angle":angle,"strength":strength}
 
-    # CREATES POINTERS
-    for row in range(rows):
-        pointers.append([])
-        for column in range(columns):
-            x = 40 + 38 * column
-            y= 40 + 45 * row
-            container = ft.Container(
-                width=containerWidth, height=containerHeight,
-                bgcolor="white", left=x,top=y
-            )
-            pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
-
-    # CREATES THE MAGNET
     def moveContainer(e:ft.DragUpdateEvent):
         nonlocal magStrength
         magnitude = magStrength
@@ -81,7 +67,8 @@ def Magnetic_View(router):
                 pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
                 pointers[row][column]["container"].update()
         
-        updateStrengthReading()
+        if(anchorSim.visible == True):
+            updateStrengthReading()
 
     def updateMagStrength(e):
         nonlocal magStrength
@@ -95,9 +82,9 @@ def Magnetic_View(router):
                 pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
                 pointers[row][column]["container"].update()
         
-        updateStrengthReading()
+        if(anchorSim.visible == True):
+            updateStrengthReading()
 
-    
     def hideAnchorMenu(e):
         updateStrengthReading()
         anchorMenu.visible = False
@@ -125,6 +112,19 @@ def Magnetic_View(router):
         anchorSim.update()
         updateStrengthReading()
     
+    # CREATES POINTERS
+    for row in range(rows):
+        pointers.append([])
+        for column in range(columns):
+            x = 40 + 38 * column
+            y= 40 + 45 * row
+            container = ft.Container(
+                width=containerWidth, height=containerHeight,
+                bgcolor="white", left=x,top=y
+            )
+            pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
+    
+    # MAGNET FOR SIMULATOR
     magnetContainer = ft.GestureDetector(
         left=300-magnetWidth/2,
         top=200-magnetHeight/2,
@@ -136,8 +136,8 @@ def Magnetic_View(router):
                 controls=[
                     ft.Column(
                         controls=[
-                            ft.Container(width=magnetWidth - 10,height=magnetHeight/2-5,bgcolor="red"),
-                            ft.Container(width=magnetWidth - 10,height=magnetHeight/2-5,bgcolor="blue")
+                            ft.Container(width=magnetWidth - 10,height=magnetHeight/1.99-5,bgcolor="red"),
+                            ft.Container(width=magnetWidth - 10,height=magnetHeight/1.99-5,bgcolor="blue")
                         ],
                         spacing=0
                     )
@@ -149,24 +149,17 @@ def Magnetic_View(router):
         on_pan_update=moveContainer
     )
 
-    magStrengthText = ft.Text(
-        "10mT",size=22,weight="bold",color="white",
-        left=470,top=15,
-        style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
-    )
-
+    # ANCHOR ELEMENTS
     anchorContainer = ft.Container(
         width=25,height=25,bgcolor="red",
         border_radius=ft.border_radius.all(30),
-        border=ft.border.all(2,"#ab4341"),
+        border=ft.border.all(4,"#bd2a28"),
     )
-
     anchorMenu = ft.Container(
         content=anchorContainer,
         left=135, top=50,
         on_click= hideAnchorMenu
     )
-
     anchorSim = ft.GestureDetector(
         visible=False,
         left=10,top=10,
@@ -176,6 +169,12 @@ def Magnetic_View(router):
         on_double_tap=hideAnchorSim
     )
 
+    # ELEMENTS THAT CHANGE
+    magStrengthText = ft.Text(
+        "10mT",size=22,weight="bold",color="white",
+        left=470,top=15,
+        style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
+    )
     magnetStrengthContainerText = ft.Text("N/A")
     magnetStrengthContainer = ft.Container(
         width=120,
