@@ -18,10 +18,109 @@ def Magnetic_View(router):
     # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, DIRECTION)
     def calculatePhysics(magnetLeft,magnetTop,pointX,pointY,rawMagStrength):
         nonlocal opaLowBound,opaUppBound
+        # UNITS
+        pfs = 1.25663706e-06
+        area = 0.0001
+        magCharge = ((rawMagStrength/1000)/pfs)*area
+
+        # CONVERSIONS (40px = 1cm, 1cm = 0.01m, 40px = 0.00025m)
+        pixelToMeter = 0.00025
+        posMagnetX = (magnetLeft + magnetWidth/2)*pixelToMeter
+        posMagnetY = (magnetTop + magnetHeight/2)*pixelToMeter
+        posObsX = pointX*pixelToMeter
+        posObsY = pointY*pixelToMeter
+
+        # print(f"Magnet X: {posMagnetX}, Magnet Y: {posMagnetY}")
+        # print(f"Pointer X: {posObsX}, Pointer Y: {posObsY}")
+
+        # COORDINATES
+        coordsObservation = np.array([posObsX,posObsY])
+        coordsMagnet = np.array([posMagnetX,posMagnetY])
+        coordsNorthPole = np.array([posMagnetX,posMagnetY-(magnetHeight/2)*pixelToMeter])
+        coordsSouthPole = np.array([posMagnetX,posMagnetY+(magnetHeight/2)*pixelToMeter])
+
+        # print(f"North X: {coordsNorthPole[0]}, North Y: {coordsNorthPole[1]}")
+        # print(f"South X: {coordsSouthPole[0]}, South Y: {coordsSouthPole[1]}")
+
+        # DISTANCE
+        distPointerNorth = coordsNorthPole-coordsObservation
+        distPointerSouth = coordsSouthPole-coordsObservation
+        # print(f"DN X: {distPointerNorth[0]}, DN Y: {distPointerNorth[1]}")
+        # print(f"DS X: {distPointerSouth[0]}, DS Y: {distPointerSouth[1]}")
+
+        # RADIUS
+        radiusPointerNorth = np.linalg.norm(distPointerNorth)
+        radiusPointerSouth = np.linalg.norm(distPointerSouth)
+        # print(f"Radius North: {radiusPointerNorth}")
+        # print(f"Radius South: {radiusPointerSouth}")
+
+        # MAGNETIC FLUX DENSITY (B)
+        bNorth = (pfs/(4*np.pi)) * (magCharge*distPointerNorth/(radiusPointerNorth**3))
+        bSouth = -(pfs/(4*np.pi)) * (magCharge*distPointerSouth/(radiusPointerSouth**3))
+        bNetCoords = bNorth + bSouth
+        bNetRadius = np.linalg.norm(bNetCoords)
+        # print(f"BN: {bNorth}")
+        # print(f"BS: {bSouth}")
+        print(f"BN in Gauss: {bNetRadius*1e4}")
+
+        # VISUAL CHANGES
+        bNetDirection = np.atan2(bNetCoords[1],bNetCoords[0])
+        opacity = 0.2
+
+        return {
+            "bNetTesla":bNetRadius,
+            "bNetDirection":bNetDirection,
+            "opacity":opacity,
+            "coordsMeter":{
+                "x":posMagnetX-posObsX,
+                "y":posMagnetY-posObsY,
+                "radius":np.linalg.norm([posMagnetX-posObsX,posMagnetY-posObsY])
+            }
+        }
+
+
+
+
+
+
+        # COORDS
         magnetX, magnetY = magnetLeft+magnetWidth/2, magnetTop+magnetHeight/2
+        # print(f"Magnet X: {magnetX}, Magnet Y: {magnetY}")
+        pointerCoords = np.array([pointX,pointY])
+        # print(f"Pointer X: {pointerCoords[0]}, Pointer Y: {pointerCoords[1]}")
+        poleNorth = np.array([magnetX/40,(magnetY-magnetHeight/2)/40])
+        # print(f"North X: {poleNorth[0]}, North Y: {poleNorth[1]}")
+
+
+
+        poleSouth = np.array([magnetX,magnetY+magnetHeight/2])
+
+        # NORTH POLE
+        radNorth = poleNorth-pointerCoords
+        normRadNorth = np.linalg.norm(radNorth)
+        bNorth = (pfs/(4*np.pi))*(magCharge*radNorth/(normRadNorth**3))
+
+        # SOUTH POLE
+        radSouth = (pointerCoords-poleSouth)*pixelToMeter
+        normRadSouth = np.linalg.norm(radSouth)
+        bSouth = (pfs/(4*np.pi))*(magCharge*radSouth/(normRadSouth**3))
+        
+        # NET
+        bNet = bNorth+bSouth
+        bStrength = np.linalg.norm(bNet)
+        # print(bStrength)
+        # print(radNorth)
+
+
+
+
+        
+
         northX, northY = magnetX, magnetY-magnetHeight/2
         southX, southY = magnetX, magnetY+magnetHeight/2
         magnitude = (float(rawMagStrength))/(1400-9)*50
+
+
         
         # MID POINT CALCULATIONS
         distX,distY = abs(magnetX-pointX)/40, abs(magnetY-pointY)/40
@@ -32,41 +131,41 @@ def Magnetic_View(router):
         deltaPyNy = pointY - northY
         radiusNorth = np.hypot(deltaPxNx,deltaPyNy)
         normNx, normNy = deltaPxNx/radiusNorth, deltaPyNy/radiusNorth
-        northX = magnitude/(radiusNorth**2) * normNx
-        northY = magnitude/(radiusNorth**2) * normNy
+        unitNorthX = magnitude/(radiusNorth**2) * normNx
+        unitNorthY = magnitude/(radiusNorth**2) * normNy
 
         # SOUTH POLE CALCULATIONS
         deltaPxSx = pointX - southX
         deltaPySy = pointY - southY
         radiusSouth = np.hypot(deltaPxSx,deltaPySy)
         normSx, normSy = deltaPxSx/radiusSouth, deltaPySy/radiusSouth
-        southX = -magnitude/(radiusSouth**2) * normSx
-        southY = -magnitude/(radiusSouth**2) * normSy
+        unitSouthX = -magnitude/(radiusSouth**2) * normSx
+        unitSouthY = -magnitude/(radiusSouth**2) * normSy
 
-        pfs = 1.25663706e-06
+        # NET
+        netX = unitNorthX + unitSouthX
+        netY = unitNorthY + unitSouthY
+        angle = np.atan2(netY,netX)
+        strength = np.hypot(netX,netY)/4000
+
         # DOUBLE MONOPOLE
         pointXY = np.array([pointX,pointY])
         northXY = np.array([magnetX,magnetY-magnetHeight/2])
         southXY = np.array([magnetX,magnetY+magnetHeight/2])
-        magCharge = ((rawMagStrength/1000)/pfs)*0.0001
+        charge = ((rawMagStrength/1000)/pfs)*0.0001
 
         radiusNorth = pointXY - northXY
         normRadiusNorth = np.linalg.norm(radiusNorth)
-        fieldStrengthNorth = (pfs/(4 * np.pi))*(magCharge*radiusNorth/normRadiusNorth**3)
+        fieldStrengthNorth = (pfs/(4 * np.pi))*(charge*radiusNorth/normRadiusNorth**3)
 
         radiusSouth = pointXY - southXY
         normRadiusSouth = np.linalg.norm(radiusSouth)
-        fieldStrengthSouth = -(pfs/(4*np.pi))*(magCharge*radiusSouth/normRadiusSouth**3)
+        fieldStrengthSouth = -(pfs/(4*np.pi))*(charge*radiusSouth/normRadiusSouth**3)
 
         netFieldStrength = np.linalg.norm(fieldStrengthNorth - fieldStrengthSouth)
         pullForce = ((netFieldStrength**2)*0.0001)/(2*pfs)
 
-
-        # NET
-        netX = northX + southX
-        netY = northY + southY
-        angle = np.atan2(netY,netX)
-        strength = np.hypot(netX,netY)/4000
+        # NEW CALCULATIONS
 
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
@@ -76,11 +175,11 @@ def Magnetic_View(router):
     def updateReadings():
         nonlocal magStrength
         information = calculatePhysics(magnetContainer.left,magnetContainer.top,anchorSim.left+12.5,anchorSim.top+12.5,magStrength)
-        readingXDist.set(f"{information["distance"]["x"]:.1f}cm")
-        readingYDist.set(f"{information["distance"]["y"]:.1f}cm")
-        readingRadius.set(f"{information["distance"]["radius"]:.1f}cm")
-        readingBr.set(f"{information["strength"]["br"]:.2f}G")
-        readingPullForce.set(f"{information["strength"]["pf"]:.2f}N")
+        readingXDist.set(f"{information["coordsMeter"]["x"]*100:.1f}cm")
+        readingYDist.set(f"{information["coordsMeter"]["y"]*100:.1f}cm")
+        readingRadius.set(f"{information["coordsMeter"]["radius"]*100:.1f}cm")
+        readingBr.set(f"{information["bNetTesla"]*1e4:.2f}G")
+        readingPullForce.set(f"N/A")
 
 
     def moveContainer(e:ft.DragUpdateEvent):
@@ -96,7 +195,7 @@ def Magnetic_View(router):
                 
                 # VISUAL CHANGES
                 pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
-                pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
+                pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["bNetDirection"]+np.pi)
                 pointers[row][column]["container"].update()
         
         if(anchorSim.visible == True):
@@ -190,7 +289,7 @@ def Magnetic_View(router):
             pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
             changes = calculatePhysics(magnetContainer.left,magnetContainer.top,pointers[row][column]["absX"],pointers[row][column]["absY"],magStrength)
             pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
-            pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
+            pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["bNetDirection"]+np.pi)
 
     # ANCHOR ELEMENTS
     anchorContainer = ft.Container(
