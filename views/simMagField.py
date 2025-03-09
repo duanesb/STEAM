@@ -61,7 +61,7 @@ def Magnetic_View(router):
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
         opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)        
-        return {"opacity":opaScalar,"angle":angle,"strength":{"fs":fieldStrength*1000,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
+        return {"opacity":opaScalar,"angle":angle,"strength":{"br":fieldStrength*1000,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
 
     def updateReadings():
         nonlocal magStrength
@@ -69,8 +69,8 @@ def Magnetic_View(router):
         readingXDist.set(f"{information["distance"]["x"]:.1f}cm")
         readingYDist.set(f"{information["distance"]["y"]:.1f}cm")
         readingRadius.set(f"{information["distance"]["radius"]:.1f}cm")
-        readingBr.set(f"{information["strength"]:.2f}mT")
-        # print(information["strength"])
+        readingBr.set(f"{information["strength"]["br"]:.2f}mT")
+        readingPullForce.set(f"{information["strength"]["pf"]:.2f}N")
 
 
     def moveContainer(e:ft.DragUpdateEvent):
@@ -204,7 +204,7 @@ def Magnetic_View(router):
     readingYDist = ContainerReading(60,375,33)
     readingRadius = ContainerReading(60,375,56)
     readingBr = ContainerReading(87,495,10)
-    readingPullForce = ContainerReading(37,545,43)
+    readingPullForce = ContainerReading(87,495,43)
     
     controls = [
         ft.Text("Magnetic Field", size=55, weight="bold"),
@@ -244,7 +244,7 @@ def Magnetic_View(router):
                                 ContainerText("Y-Dist:",16,310,33), readingYDist,
                                 ContainerText("Radius:",16,310,56), readingRadius,
                                 ContainerText("B(r):",16,450,10), readingBr,
-                                ContainerText("Pull Force:",16,450,43), readingPullForce
+                                ContainerText("Pull:",16,450,43), readingPullForce
                             ]
                         )
                     )
