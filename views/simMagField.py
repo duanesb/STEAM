@@ -12,12 +12,13 @@ def Magnetic_View(router):
     magnetHeight = 120
     magStrength = 300
 
-    opaLowBound = 2.65e-08
-    opaUppBound = 2.51e-07
+    # RANGE FOR OPACITY
+    minOpacityValue = 1.5
+    maxOpacityValue = 50
 
     # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, DIRECTION)
     def calculatePhysics(magnetLeft,magnetTop,pointX,pointY,rawMagStrength):
-        nonlocal opaLowBound,opaUppBound
+        nonlocal minOpacityValue,maxOpacityValue
         # UNITS
         pfs = 1.25663706e-06
         area = 0.0001
@@ -61,14 +62,19 @@ def Magnetic_View(router):
         bNetRadius = np.linalg.norm(bNetCoords)
         # print(f"BN: {bNorth}")
         # print(f"BS: {bSouth}")
-        print(f"BN in Gauss: {bNetRadius*1e4}")
+        # print(f"BN in Gauss: {bNetRadius*1e4}")
+
+        # PULL FORCE
+        pullForce = ((bNetRadius**2)*area)/(2*pfs)
 
         # VISUAL CHANGES
         bNetDirection = np.atan2(bNetCoords[1],bNetCoords[0])
-        opacity = 0.2
+        opacityCheck = np.clip(bNetRadius*1e4,minOpacityValue,maxOpacityValue)
+        opacity = 0.1 + 0.9 * ((opacityCheck-minOpacityValue)/(maxOpacityValue-minOpacityValue))
 
         return {
             "bNetTesla":bNetRadius,
+            "pullForceNewton":pullForce,
             "bNetDirection":bNetDirection,
             "opacity":opacity,
             "coordsMeter":{
@@ -78,108 +84,25 @@ def Magnetic_View(router):
             }
         }
 
-
-
-
-
-
-        # COORDS
-        magnetX, magnetY = magnetLeft+magnetWidth/2, magnetTop+magnetHeight/2
-        # print(f"Magnet X: {magnetX}, Magnet Y: {magnetY}")
-        pointerCoords = np.array([pointX,pointY])
-        # print(f"Pointer X: {pointerCoords[0]}, Pointer Y: {pointerCoords[1]}")
-        poleNorth = np.array([magnetX/40,(magnetY-magnetHeight/2)/40])
-        # print(f"North X: {poleNorth[0]}, North Y: {poleNorth[1]}")
-
-
-
-        poleSouth = np.array([magnetX,magnetY+magnetHeight/2])
-
-        # NORTH POLE
-        radNorth = poleNorth-pointerCoords
-        normRadNorth = np.linalg.norm(radNorth)
-        bNorth = (pfs/(4*np.pi))*(magCharge*radNorth/(normRadNorth**3))
-
-        # SOUTH POLE
-        radSouth = (pointerCoords-poleSouth)*pixelToMeter
-        normRadSouth = np.linalg.norm(radSouth)
-        bSouth = (pfs/(4*np.pi))*(magCharge*radSouth/(normRadSouth**3))
-        
-        # NET
-        bNet = bNorth+bSouth
-        bStrength = np.linalg.norm(bNet)
-        # print(bStrength)
-        # print(radNorth)
-
-
-
-
-        
-
-        northX, northY = magnetX, magnetY-magnetHeight/2
-        southX, southY = magnetX, magnetY+magnetHeight/2
-        magnitude = (float(rawMagStrength))/(1400-9)*50
-
-
-        
-        # MID POINT CALCULATIONS
-        distX,distY = abs(magnetX-pointX)/40, abs(magnetY-pointY)/40
-        distRadius = np.hypot(distX,distY)
-
-        # NORTH POLE CALCULATIONS
-        deltaPxNx = pointX - northX
-        deltaPyNy = pointY - northY
-        radiusNorth = np.hypot(deltaPxNx,deltaPyNy)
-        normNx, normNy = deltaPxNx/radiusNorth, deltaPyNy/radiusNorth
-        unitNorthX = magnitude/(radiusNorth**2) * normNx
-        unitNorthY = magnitude/(radiusNorth**2) * normNy
-
-        # SOUTH POLE CALCULATIONS
-        deltaPxSx = pointX - southX
-        deltaPySy = pointY - southY
-        radiusSouth = np.hypot(deltaPxSx,deltaPySy)
-        normSx, normSy = deltaPxSx/radiusSouth, deltaPySy/radiusSouth
-        unitSouthX = -magnitude/(radiusSouth**2) * normSx
-        unitSouthY = -magnitude/(radiusSouth**2) * normSy
-
-        # NET
-        netX = unitNorthX + unitSouthX
-        netY = unitNorthY + unitSouthY
-        angle = np.atan2(netY,netX)
-        strength = np.hypot(netX,netY)/4000
-
-        # DOUBLE MONOPOLE
-        pointXY = np.array([pointX,pointY])
-        northXY = np.array([magnetX,magnetY-magnetHeight/2])
-        southXY = np.array([magnetX,magnetY+magnetHeight/2])
-        charge = ((rawMagStrength/1000)/pfs)*0.0001
-
-        radiusNorth = pointXY - northXY
-        normRadiusNorth = np.linalg.norm(radiusNorth)
-        fieldStrengthNorth = (pfs/(4 * np.pi))*(charge*radiusNorth/normRadiusNorth**3)
-
-        radiusSouth = pointXY - southXY
-        normRadiusSouth = np.linalg.norm(radiusSouth)
-        fieldStrengthSouth = -(pfs/(4*np.pi))*(charge*radiusSouth/normRadiusSouth**3)
-
-        netFieldStrength = np.linalg.norm(fieldStrengthNorth - fieldStrengthSouth)
-        pullForce = ((netFieldStrength**2)*0.0001)/(2*pfs)
-
-        # NEW CALCULATIONS
-
-        # VISUAL
-        opaCheck = np.clip(strength,opaLowBound,opaUppBound)
-        opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)        
-        return {"opacity":opaScalar,"angle":angle,"strength":{"br":netFieldStrength,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
-
     def updateReadings():
         nonlocal magStrength
         information = calculatePhysics(magnetContainer.left,magnetContainer.top,anchorSim.left+12.5,anchorSim.top+12.5,magStrength)
-        readingXDist.set(f"{information["coordsMeter"]["x"]*100:.1f}cm")
-        readingYDist.set(f"{information["coordsMeter"]["y"]*100:.1f}cm")
+        bNet = information["bNetTesla"]*1e4
+        bNet = f"{bNet:.2e}G" if abs(bNet) >= 10000 else f"{bNet:.2f}G"
+
+        pullForce = information["pullForceNewton"]
+
+        if (abs(pullForce) >= 1000 or (abs(pullForce) > 0 and abs(pullForce) < 0.01)):
+            pullForce = f"{pullForce:.2e}N"
+        else:
+            pullForce = f"{pullForce:.2f}N"
+
+
+        readingXDist.set(f"{abs(information["coordsMeter"]["x"])*100:.1f}cm")
+        readingYDist.set(f"{abs(information["coordsMeter"]["y"])*100:.1f}cm")
         readingRadius.set(f"{information["coordsMeter"]["radius"]*100:.1f}cm")
-        readingBr.set(f"{information["bNetTesla"]*1e4:.2f}G")
-        readingPullForce.set(f"N/A")
+        readingBNet.set(bNet)
+        readingPullForce.set(pullForce)
 
 
     def moveContainer(e:ft.DragUpdateEvent):
@@ -242,7 +165,7 @@ def Magnetic_View(router):
         readingXDist.set("N/A")
         readingYDist.set("N/A")
         readingRadius.set("N/A")
-        readingBr.set("N/A")
+        readingBNet.set("N/A")
         readingPullForce.set("N/A")
     
     def moveAnchor(e:ft.DragUpdateEvent):
@@ -317,7 +240,7 @@ def Magnetic_View(router):
     readingXDist = ContainerReading(60,375,10)
     readingYDist = ContainerReading(60,375,33)
     readingRadius = ContainerReading(60,375,56)
-    readingBr = ContainerReading(87,495,10)
+    readingBNet = ContainerReading(87,495,10)
     readingPullForce = ContainerReading(87,495,43)
     
     controls = [
@@ -357,7 +280,7 @@ def Magnetic_View(router):
                                 ContainerText("X-Dist:",16,310,10), readingXDist,
                                 ContainerText("Y-Dist:",16,310,33), readingYDist,
                                 ContainerText("Radius:",16,310,56), readingRadius,
-                                ContainerText("B(r):",16,450,10), readingBr,
+                                ContainerText("B(r):",16,450,10), readingBNet,
                                 ContainerText("Pull:",16,450,43), readingPullForce
                             ]
                         )
