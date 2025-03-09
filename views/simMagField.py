@@ -43,12 +43,13 @@ def Magnetic_View(router):
         southX = -magnitude/(radiusSouth**2) * normSx
         southY = -magnitude/(radiusSouth**2) * normSy
 
-        # DIPOLE FIELD FORMULA FOR STRENGTH
+        # DIPOLE FIELD FORMULA FOR MAGNETIC FLUX DENSITY AND PULL FORCE
         pfs = 1.25663706e-06
         magnetization = (rawMagStrength/1000)/pfs
         dipoleMoment = magnetization * 3e-06
-
         fieldStrength = (pfs/(4*np.pi))*((2*dipoleMoment)/(distRadius/100)**3)
+        pullForce = ((fieldStrength** 2) * 0.0001) / (2 * pfs)
+
 
 
         # NET
@@ -60,7 +61,7 @@ def Magnetic_View(router):
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
         opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)        
-        return {"opacity":opaScalar,"angle":angle,"strength":fieldStrength,"distance":{"x":distX,"y":distY,"radius":distRadius}}
+        return {"opacity":opaScalar,"angle":angle,"strength":{"fs":fieldStrength*1000,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
 
     def updateReadings():
         nonlocal magStrength
@@ -68,7 +69,7 @@ def Magnetic_View(router):
         readingXDist.set(f"{information["distance"]["x"]:.1f}cm")
         readingYDist.set(f"{information["distance"]["y"]:.1f}cm")
         readingRadius.set(f"{information["distance"]["radius"]:.1f}cm")
-        readingBr.set(f"{information["strength"]:.2e}")
+        readingBr.set(f"{information["strength"]:.2f}mT")
         # print(information["strength"])
 
 
@@ -203,6 +204,7 @@ def Magnetic_View(router):
     readingYDist = ContainerReading(60,375,33)
     readingRadius = ContainerReading(60,375,56)
     readingBr = ContainerReading(87,495,10)
+    readingPullForce = ContainerReading(37,545,43)
     
     controls = [
         ft.Text("Magnetic Field", size=55, weight="bold"),
@@ -241,7 +243,8 @@ def Magnetic_View(router):
                                 ContainerText("X-Dist:",16,310,10), readingXDist,
                                 ContainerText("Y-Dist:",16,310,33), readingYDist,
                                 ContainerText("Radius:",16,310,56), readingRadius,
-                                ContainerText("B(r):",16,450,10), readingBr
+                                ContainerText("B(r):",16,450,10), readingBr,
+                                ContainerText("Pull Force:",16,450,43), readingPullForce
                             ]
                         )
                     )
