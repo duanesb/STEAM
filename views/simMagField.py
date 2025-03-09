@@ -139,8 +139,10 @@ def Magnetic_View(router):
         updateReadings()
         anchorMenu.visible = False
         anchorSim.visible = True
-        readingXDist.enable()
-        readingYDist.enable()
+        readingXDist.content.disabled = False
+        readingYDist.content.disabled = False
+        readingXDist.content.update()
+        readingYDist.content.update()
         anchorMenu.update()
         anchorSim.update()
     
@@ -154,6 +156,10 @@ def Magnetic_View(router):
         readingRadius.set("N/A")
         readingBNet.set("N/A")
         readingPullForce.set("N/A")
+        readingXDist.content.disabled = True
+        readingYDist.content.disabled = True
+        readingXDist.content.update()
+        readingYDist.content.update()
     
     def moveAnchor(e:ft.DragUpdateEvent):
         anchorSim.top = max(0, min(anchorSim.top + e.delta_y,400-25))
@@ -163,6 +169,7 @@ def Magnetic_View(router):
     
     def textFieldChange(e):
         anchorSim.left = (magnetContainer.left+magnetWidth/2 + readingXDist.getVal()*40)
+        anchorSim.top = (magnetContainer.top+magnetHeight/2 - readingYDist.getVal()*40)
         anchorSim.update()
         # calculatePhysics
     

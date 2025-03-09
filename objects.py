@@ -117,6 +117,6 @@ class ContainerReading(ft.Container):
         return float(self.content.value)
     
     def enable(self):
-        self.content.disabled = True
+        self.content.disabled = False
         self.content.update()
         
