@@ -255,7 +255,7 @@ def Magnetic_View(router):
     readingYDist = ContainerReading(60,375,33,textField=True,function=textFieldChange)
     readingRadius = ContainerReading(60,375,56)
     readingBNet = ContainerReading(87,495,10)
-    readingPullForce = ContainerReading(87,495,43)
+    readingPullForce = ContainerReading(87,495,50)
     
     controls = [
         ft.Text("Magnetic Field", size=55, weight="bold"),
@@ -295,7 +295,9 @@ def Magnetic_View(router):
                                 ContainerText("Y-Dist:",16,310,33), readingYDist,
                                 ContainerText("Radius:",16,310,56), readingRadius,
                                 ContainerText("B(r):",16,450,10), readingBNet,
-                                ContainerText("Pull:",16,450,43), readingPullForce
+                                ContainerText("Pull:",16,450,50), readingPullForce,
+                                ContainerText("Magnetic Flux Density",8,450,33),
+                                ContainerText("Force",8,451,67)
                             ]
                         )
                     )
