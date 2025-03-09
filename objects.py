@@ -79,7 +79,6 @@ class ContainerDivider(ft.Container):
         self.left=left
         self.top=top
 
-
 class ContainerText(ft.Text):
     def __init__(self,text,size,left,top):
         super().__init__(text)
@@ -88,3 +87,19 @@ class ContainerText(ft.Text):
         self.color="black"
         self.left=left
         self.top=top
+
+class ContainerReading(ft.Container):
+    def __init__(self,width,left,top,default=None):
+        super().__init__()
+        self.content = ft.Text(default if default is not None else "N/A", selectable=True)
+        self.width=width
+        self.height=20
+        self.bgcolor="white"
+        self.border=ft.BorderSide(3,"grey")
+        self.left=left
+        self.top=top
+    
+    def set(self,change):
+        self.content.value = change
+        self.content.update()
+    

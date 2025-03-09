@@ -1,6 +1,6 @@
 import flet as ft
 import numpy as np
-from objects import BackElevatedButton,ContentContainer,ContainerDivider,ContainerText
+from objects import BackElevatedButton,ContentContainer,ContainerDivider,ContainerText,ContainerReading
 
 def Magnetic_View(router):
     pointers=[]
@@ -10,10 +10,10 @@ def Magnetic_View(router):
     containerHeight = 5.5
     magnetWidth = 40
     magnetHeight = 120
-    magStrength = 10
+    magStrength = 300
 
-    opaLowBound = 1.2167e-08
-    opaUppBound = 1.0485e-07
+    opaLowBound = 2.65e-08
+    opaUppBound = 2.51e-07
 
     # PHYSICS FORMULA (DISTANCE FROM MAGNET TO POINTER, MAGNET STRENGTH, DIRECTION)
     def calculatePhysics(magnetLeft,magnetTop,pointX,pointY,rawMagStrength):
@@ -43,6 +43,14 @@ def Magnetic_View(router):
         southX = -magnitude/(radiusSouth**2) * normSx
         southY = -magnitude/(radiusSouth**2) * normSy
 
+        # DIPOLE FIELD FORMULA FOR STRENGTH
+        pfs = 1.25663706e-06
+        magnetization = (rawMagStrength/1000)/pfs
+        dipoleMoment = magnetization * 3e-06
+
+        fieldStrength = (pfs/(4*np.pi))*((2*dipoleMoment)/(distRadius/100)**3)
+
+
         # NET
         netX = (northX + southX)/4000
         netY = (northY + southY)/4000
@@ -52,18 +60,17 @@ def Magnetic_View(router):
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
         opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)        
-        return {"opacity":opaScalar,"angle":angle,"strength":strength,"distance":{"x":distX,"y":distY,"radius":distRadius}}
+        return {"opacity":opaScalar,"angle":angle,"strength":fieldStrength,"distance":{"x":distX,"y":distY,"radius":distRadius}}
 
     def updateReadings():
         nonlocal magStrength
         information = calculatePhysics(magnetContainer.left,magnetContainer.top,anchorSim.left+12.5,anchorSim.top+12.5,magStrength)
-        mcDistxText.value = f"{information["distance"]["x"]:.2f}cm"
-        # mcDistxText.value = f"{information["distance"]["x"]:.2f}"
-        mcRadiusText.value = f"{information["distance"]["radius"]:.2f}cm"
-        mcStrengthText.value = f"{information["strength"]:.4e}"
-        mcDistxText.update()
-        mcRadiusText.update()
-        mcStrengthText.update()
+        readingXDist.set(f"{information["distance"]["x"]:.1f}cm")
+        readingYDist.set(f"{information["distance"]["y"]:.1f}cm")
+        readingRadius.set(f"{information["distance"]["radius"]:.1f}cm")
+        readingBr.set(f"{information["strength"]:.2e}")
+        # print(information["strength"])
+
 
     def moveContainer(e:ft.DragUpdateEvent):
         nonlocal magStrength
@@ -87,8 +94,19 @@ def Magnetic_View(router):
     def updateMagStrength(e):
         nonlocal magStrength
         magStrength = int(e.control.value)
-        magStrengthText.value = f"{magStrength} mT"
-        magStrengthText.update()
+        readingMagStrength.set(f"{magStrength}mT")
+        if magStrength <= 500:
+            readingMSComp.value = "Comparison: Ceramic"
+        elif magStrength > 500 and magStrength < 900:
+            readingMSComp.value = "Comparison: N/A"
+        elif magStrength >= 900 and magStrength < 1100:
+            readingMSComp.value = "Comparison: SmCo"
+        elif magStrength >= 1100 and magStrength < 1170:
+            readingMSComp.value = "Comparison: Alnico"
+        else:
+            readingMSComp.value = "Comparison: Neodymium"
+        
+        readingMSComp.update()
 
         for row in range(len(pointers)):
             for column in range(len(pointers[row])):
@@ -107,30 +125,16 @@ def Magnetic_View(router):
         anchorSim.update()
     
     def hideAnchorSim(e):
-        mcStrengthText.value = "N/A"
         anchorMenu.visible = True
         anchorSim.visible = False
         anchorMenu.update()
         anchorSim.update()
-        mcStrengthText.update()
     
     def moveAnchor(e:ft.DragUpdateEvent):
         anchorSim.top = max(0, min(anchorSim.top + e.delta_y,400-25))
         anchorSim.left = max(0, min(anchorSim.left + e.delta_x,590-25))
         anchorSim.update()
         updateReadings()
-    
-    # CREATES POINTERS
-    for row in range(rows):
-        pointers.append([])
-        for column in range(columns):
-            x = 40 + 38 * column
-            y= 40 + 45 * row
-            container = ft.Container(
-                width=containerWidth, height=containerHeight,
-                bgcolor="white", left=x,top=y
-            )
-            pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
     
     # MAGNET FOR SIMULATOR
     magnetContainer = ft.GestureDetector(
@@ -157,11 +161,26 @@ def Magnetic_View(router):
         on_pan_update=moveContainer
     )
 
+    # CREATES POINTERS
+    for row in range(rows):
+        pointers.append([])
+        for column in range(columns):
+            x = 40 + 38 * column
+            y= 40 + 45 * row
+            container = ft.Container(
+                width=containerWidth, height=containerHeight,
+                bgcolor="white", left=x,top=y
+            )
+            pointers[row].append({"container":container,"absX":x+containerWidth/2,"absY":y+containerHeight/2})
+            changes = calculatePhysics(magnetContainer.left,magnetContainer.top,pointers[row][column]["absX"],pointers[row][column]["absY"],magStrength)
+            pointers[row][column]["container"].bgcolor = f"white,{changes["opacity"]}"
+            pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["angle"]+np.pi)
+
     # ANCHOR ELEMENTS
     anchorContainer = ft.Container(
-        width=25,height=25,bgcolor="red",
+        width=25,height=25,bgcolor="#f5e267",
         border_radius=ft.border_radius.all(30),
-        border=ft.border.all(4,"#bd2a28"),
+        border=ft.border.all(3,"#fce865"),
     )
     anchorMenu = ft.Container(
         content=anchorContainer,
@@ -177,50 +196,13 @@ def Magnetic_View(router):
         on_double_tap=hideAnchorSim
     )
 
-    # ELEMENTS THAT CHANGE
-    magStrengthText = ft.Text(
-        "10mT",size=22,weight="bold",color="white",
-        left=470,top=15,
-        style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
-    )
-    
-    # FIELD ELEMENTS
-    mcDistxText = ft.Text("N/A",selectable=True)
-    mcDistx = ft.Container(
-        width=60,
-        height=20,
-        bgcolor="white",border=ft.BorderSide(3,"grey"),
-        left=160,top=15,
-        content=mcDistxText
-    )
-
-    mcRadiusText = ft.Text("N/A",selectable=True)
-    mcRadius = ft.Container(
-        width=60,
-        height=20,
-        bgcolor="white",border=ft.BorderSide(3,"grey"),
-        left=285,top=15,
-        content=mcRadiusText
-    )
-
-    mcStrengthText = ft.Text("N/A",selectable=True)
-    mcStrength = ft.Container(
-        width=100,
-        height=20,
-        bgcolor="white",border=ft.BorderSide(3,"grey"),
-        left=245,top=45,
-        content=mcStrengthText
-    )
-
-    mcDistyText = ft.Text("N/A",selectable=True)
-    mcDisty = ft.Container(
-        width=100,
-        height=20,
-        bgcolor="white",border=ft.BorderSide(3,"grey"),
-        left=245,top=85,
-        content=mcDistyText
-    )
-
+    # READING CONTAINERS
+    readingMagStrength = ContainerReading(60,230,37,"300mT")
+    readingMSComp = ContainerText("Comparison: Ceramic",12,132,60)
+    readingXDist = ContainerReading(60,375,10)
+    readingYDist = ContainerReading(60,375,33)
+    readingRadius = ContainerReading(60,375,56)
+    readingBr = ContainerReading(87,495,10)
     
     controls = [
         ft.Text("Magnetic Field", size=55, weight="bold"),
@@ -242,25 +224,24 @@ def Magnetic_View(router):
                     ft.Container(width=600,height=90,bgcolor="#706394",border=ft.border.only(top=ft.BorderSide(5,"black")),
                         content=ft.Stack(
                             controls=[
-                                ContainerText("Field Meter",18,10,13),
-                                ContainerText("Click Then Drag",11,12,33),
+                                ContainerText("Field Meter",18,10,10),
+                                ContainerText("Click Then Drag",11,12,30),
                                 anchorMenu, # ANCHOR FOR CONTAINER
                                 ContainerDivider(121,10),
-                                ContainerText("X:",14,135,16), # X DISTANCE READING
-                                mcDistx,
-                                ContainerText("Y:",14,135,56),
-                                ContainerText("Radius:",14,225,16), # RADIUS READING CONTAINER
-                                mcRadius, 
-                                mcStrength, # STRENGTH READING CONTAINER
-                                ContainerDivider(360,10),
-                                ContainerText("Magnet\nStrength",18,374,18),
-                                ft.Slider(
-                                    min=10,max=1400,divisions=100,
-                                    width=140,
-                                    left=447,top=40,
+                                ContainerText("Magnet Strength",18,132,10),
+                                ft.Slider( # MAGNET STRENGTH SLIDER
+                                    min=300,max=1400,divisions=50,
+                                    width=125,
+                                    left=112,top=25,
                                     active_color="#ab9dd4", on_change=updateMagStrength
                                 ),
-                                magStrengthText # MAGNET STRENGTH TEXT
+                                readingMagStrength, # MAGNET STRENGTH READING
+                                readingMSComp,
+                                ContainerDivider(300,10),
+                                ContainerText("X-Dist:",16,310,10), readingXDist,
+                                ContainerText("Y-Dist:",16,310,33), readingYDist,
+                                ContainerText("Radius:",16,310,56), readingRadius,
+                                ContainerText("B(r):",16,450,10), readingBr
                             ]
                         )
                     )
