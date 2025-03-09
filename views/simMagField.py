@@ -33,7 +33,6 @@ def Magnetic_View(router):
 
         # COORDINATES
         coordsObservation = np.array([posObsX,posObsY])
-        coordsMagnet = np.array([posMagnetX,posMagnetY])
         coordsNorthPole = np.array([posMagnetX,posMagnetY-(magnetHeight/2)*pixelToMeter])
         coordsSouthPole = np.array([posMagnetX,posMagnetY+(magnetHeight/2)*pixelToMeter])
 
