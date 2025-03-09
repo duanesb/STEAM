@@ -31,38 +31,25 @@ def Magnetic_View(router):
         posObsX = pointX*pixelToMeter
         posObsY = pointY*pixelToMeter
 
-        # print(f"Magnet X: {posMagnetX}, Magnet Y: {posMagnetY}")
-        # print(f"Pointer X: {posObsX}, Pointer Y: {posObsY}")
-
         # COORDINATES
         coordsObservation = np.array([posObsX,posObsY])
         coordsMagnet = np.array([posMagnetX,posMagnetY])
         coordsNorthPole = np.array([posMagnetX,posMagnetY-(magnetHeight/2)*pixelToMeter])
         coordsSouthPole = np.array([posMagnetX,posMagnetY+(magnetHeight/2)*pixelToMeter])
 
-        # print(f"North X: {coordsNorthPole[0]}, North Y: {coordsNorthPole[1]}")
-        # print(f"South X: {coordsSouthPole[0]}, South Y: {coordsSouthPole[1]}")
-
         # DISTANCE
         distPointerNorth = coordsNorthPole-coordsObservation
         distPointerSouth = coordsSouthPole-coordsObservation
-        # print(f"DN X: {distPointerNorth[0]}, DN Y: {distPointerNorth[1]}")
-        # print(f"DS X: {distPointerSouth[0]}, DS Y: {distPointerSouth[1]}")
 
         # RADIUS
         radiusPointerNorth = np.linalg.norm(distPointerNorth)
         radiusPointerSouth = np.linalg.norm(distPointerSouth)
-        # print(f"Radius North: {radiusPointerNorth}")
-        # print(f"Radius South: {radiusPointerSouth}")
 
         # MAGNETIC FLUX DENSITY (B)
         bNorth = (pfs/(4*np.pi)) * (magCharge*distPointerNorth/(radiusPointerNorth**3))
         bSouth = -(pfs/(4*np.pi)) * (magCharge*distPointerSouth/(radiusPointerSouth**3))
         bNetCoords = bNorth + bSouth
         bNetRadius = np.linalg.norm(bNetCoords)
-        # print(f"BN: {bNorth}")
-        # print(f"BS: {bSouth}")
-        # print(f"BN in Gauss: {bNetRadius*1e4}")
 
         # PULL FORCE
         pullForce = ((bNetRadius**2)*area)/(2*pfs)
