@@ -305,7 +305,15 @@ def Magnetic_View(router):
                 spacing=0
             )
         ),
-        BackElevatedButton("Back",lambda e:router.go('/intro'))
+        ft.Row(
+            controls=[
+                ft.Container(width=200),
+                BackElevatedButton("Back",lambda e:router.go('/intro')),
+                ft.Text("Double-click pointer when active to hide.\nYou can edit coordinates once pointer is active.",width=200,size=11)
+            ],
+            width=600,
+            alignment=ft.MainAxisAlignment.CENTER
+        )
     ]
     content = ContentContainer(controls)
     return content
