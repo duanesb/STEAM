@@ -89,12 +89,22 @@ class ContainerText(ft.Text):
         self.top=top
 
 class ContainerReading(ft.Container):
-    def __init__(self,width,left,top,default=None):
+    def __init__(self,width,left,top,default=None,textField:bool=False,function=None):
         super().__init__()
-        self.content = ft.Text(default if default is not None else "N/A", selectable=True)
+        if textField:
+            self.content = ft.TextField(
+                value="N/A",suffix_text="cm ",
+                border=ft.InputBorder.NONE,
+                content_padding=ft.padding.only(top=-20),
+                text_size=14, cursor_color="black",cursor_height=12,
+                on_submit=function, disabled=True
+            )
+            self.bgcolor = "#d6ccdb"
+        else:
+            self.content = ft.Text(default if default is not None else "N/A", selectable=True)
+            self.bgcolor="white"
         self.width=width
         self.height=20
-        self.bgcolor="white"
         self.border=ft.BorderSide(3,"grey")
         self.left=left
         self.top=top
@@ -103,3 +113,10 @@ class ContainerReading(ft.Container):
         self.content.value = change
         self.content.update()
     
+    def getVal(self):
+        return float(self.content.value)
+    
+    def enable(self):
+        self.content.disabled = True
+        self.content.update()
+        

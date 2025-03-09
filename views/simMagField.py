@@ -64,7 +64,7 @@ def Magnetic_View(router):
             "bNetDirection":bNetDirection,
             "opacity":opacity,
             "coordsMeter":{
-                "x":posMagnetX-posObsX,
+                "x":-(posMagnetX-posObsX),
                 "y":posMagnetY-posObsY,
                 "radius":np.linalg.norm([posMagnetX-posObsX,posMagnetY-posObsY])
             }
@@ -84,12 +84,11 @@ def Magnetic_View(router):
             pullForce = f"{pullForce:.2f}N"
 
 
-        readingXDist.set(f"{abs(information["coordsMeter"]["x"])*100:.1f}cm")
-        readingYDist.set(f"{abs(information["coordsMeter"]["y"])*100:.1f}cm")
+        readingXDist.set(f"{information["coordsMeter"]["x"]*100:.1f}")
+        readingYDist.set(f"{information["coordsMeter"]["y"]*100:.1f}")
         readingRadius.set(f"{information["coordsMeter"]["radius"]*100:.1f}cm")
         readingBNet.set(bNet)
         readingPullForce.set(pullForce)
-
 
     def moveContainer(e:ft.DragUpdateEvent):
         nonlocal magStrength
@@ -140,6 +139,8 @@ def Magnetic_View(router):
         updateReadings()
         anchorMenu.visible = False
         anchorSim.visible = True
+        readingXDist.enable()
+        readingYDist.enable()
         anchorMenu.update()
         anchorSim.update()
     
@@ -159,6 +160,11 @@ def Magnetic_View(router):
         anchorSim.left = max(0, min(anchorSim.left + e.delta_x,590-25))
         anchorSim.update()
         updateReadings()
+    
+    def textFieldChange(e):
+        anchorSim.left = (magnetContainer.left+magnetWidth/2 + readingXDist.getVal()*40)
+        anchorSim.update()
+        # calculatePhysics
     
     # MAGNET FOR SIMULATOR
     magnetContainer = ft.GestureDetector(
@@ -223,8 +229,8 @@ def Magnetic_View(router):
     # READING CONTAINERS
     readingMagStrength = ContainerReading(60,230,37,"300mT")
     readingMSComp = ContainerText("Comparison: Ceramic",12,132,60)
-    readingXDist = ContainerReading(60,375,10)
-    readingYDist = ContainerReading(60,375,33)
+    readingXDist = ContainerReading(60,375,10,textField=True,function=textFieldChange)
+    readingYDist = ContainerReading(60,375,33,textField=True)
     readingRadius = ContainerReading(60,375,56)
     readingBNet = ContainerReading(87,495,10)
     readingPullForce = ContainerReading(87,495,43)
