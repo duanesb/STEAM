@@ -43,25 +43,35 @@ def Magnetic_View(router):
         southX = -magnitude/(radiusSouth**2) * normSx
         southY = -magnitude/(radiusSouth**2) * normSy
 
-        # DIPOLE FIELD FORMULA FOR MAGNETIC FLUX DENSITY AND PULL FORCE
         pfs = 1.25663706e-06
-        magnetization = (rawMagStrength/1000)/pfs
-        dipoleMoment = magnetization * 3e-06
-        fieldStrength = (pfs/(4*np.pi))*((2*dipoleMoment)/(distRadius/100)**3)
-        pullForce = ((fieldStrength** 2) * 0.0001) / (2 * pfs)
+        # DOUBLE MONOPOLE
+        pointXY = np.array([pointX,pointY])
+        northXY = np.array([magnetX,magnetY-magnetHeight/2])
+        southXY = np.array([magnetX,magnetY+magnetHeight/2])
+        magCharge = ((rawMagStrength/1000)/pfs)*0.0001
 
+        radiusNorth = pointXY - northXY
+        normRadiusNorth = np.linalg.norm(radiusNorth)
+        fieldStrengthNorth = (pfs/(4 * np.pi))*(magCharge*radiusNorth/normRadiusNorth**3)
+
+        radiusSouth = pointXY - southXY
+        normRadiusSouth = np.linalg.norm(radiusSouth)
+        fieldStrengthSouth = -(pfs/(4*np.pi))*(magCharge*radiusSouth/normRadiusSouth**3)
+
+        netFieldStrength = np.linalg.norm(fieldStrengthNorth - fieldStrengthSouth)
+        pullForce = ((netFieldStrength**2)*0.0001)/(2*pfs)
 
 
         # NET
-        netX = (northX + southX)/4000
-        netY = (northY + southY)/4000
+        netX = northX + southX
+        netY = northY + southY
         angle = np.atan2(netY,netX)
-        strength = np.hypot(netX,netY)
+        strength = np.hypot(netX,netY)/4000
 
         # VISUAL
         opaCheck = np.clip(strength,opaLowBound,opaUppBound)
         opaScalar = 0.2 + 0.8*(opaCheck-opaLowBound)/(opaUppBound-opaLowBound)        
-        return {"opacity":opaScalar,"angle":angle,"strength":{"br":fieldStrength*1000,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
+        return {"opacity":opaScalar,"angle":angle,"strength":{"br":netFieldStrength,"pf":pullForce},"distance":{"x":distX,"y":distY,"radius":distRadius}}
 
     def updateReadings():
         nonlocal magStrength
@@ -69,7 +79,7 @@ def Magnetic_View(router):
         readingXDist.set(f"{information["distance"]["x"]:.1f}cm")
         readingYDist.set(f"{information["distance"]["y"]:.1f}cm")
         readingRadius.set(f"{information["distance"]["radius"]:.1f}cm")
-        readingBr.set(f"{information["strength"]["br"]:.2f}mT")
+        readingBr.set(f"{information["strength"]["br"]:.2f}G")
         readingPullForce.set(f"{information["strength"]["pf"]:.2f}N")
 
 
@@ -130,6 +140,11 @@ def Magnetic_View(router):
         anchorSim.visible = False
         anchorMenu.update()
         anchorSim.update()
+        readingXDist.set("N/A")
+        readingYDist.set("N/A")
+        readingRadius.set("N/A")
+        readingBr.set("N/A")
+        readingPullForce.set("N/A")
     
     def moveAnchor(e:ft.DragUpdateEvent):
         anchorSim.top = max(0, min(anchorSim.top + e.delta_y,400-25))
