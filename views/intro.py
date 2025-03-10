@@ -9,7 +9,6 @@ def Intro_View(router):
                 SimulatorButton("Ohm's Law", get_asset_path("Ohm-intro.png"), lambda e: router.go('/ohm')),
                 SimulatorButton("Magnetic Field", get_asset_path("Magnetic-intro.png"), lambda e: router.go('/magnetic')),
                 SimulatorButton("Capacitance", get_asset_path("Capacitance-intro.png"), lambda e: router.go('/capacitance')),
-                SimulatorButton("Resistance", get_asset_path("Resistance-intro.png"), lambda e: router.go('/resistance')),
             ],
             width=700,
             wrap=True,
