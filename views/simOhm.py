@@ -12,65 +12,140 @@ def Ohm_View(router):
     current = 10
 
     voltage_text = ft.Text(
-        "0.1V",size=22,weight="bold",color="white",
+        f"{volts}V",size=22,weight="bold",color="white",
         left=475,top=40,
         style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
     )
 
     resistance_text = ft.Text(
-        "10Ω",size=22,weight="bold",color="white",
+        f"{resistance}Ω",size=22,weight="bold",color="white",
         left=475,top=5,
         style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)
     )
 
     current_text = ft.Text(
-        "10.0mA",size=22,weight="bold",color="white",
+        f"{current}mA",size=22,weight="bold",color="white",
         left=475,top=40,
         style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
         visible=False
+    )
+
+    answer_text = ft.Text(
+        f"Current: {current}mA",size=30,weight="bold",color="black",
+        left=190,top=250,
+        style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
     )
 
     white_background = ft.Container(bgcolor="white", opacity=0.9, width=800, height=800, visible=False)
 
     def updateVolt(e):
         nonlocal volts, resistance, current
-        volts = round(e.control.value,2)
+        volts = round(e.control.value, 1)
         voltage_text.value = f"{volts}V"
         voltage_text.update()
-        if current_slider.visible == True:
-            resistance = volts/current
+
+        if current_slider.visible:
+            resistance = round(volts / (current / 1000))
+
+            answer_text.value = f"Resistance: {resistance}Ω"
+
+            if resistance < 10:
+                resistance = 10
+            elif resistance > 900:
+                resistance = 900
+                
             resistance_text.value = f"{resistance}Ω"
+            resistance_slider.content.value = resistance
+            resistance_slider.content.update()
         else:
-            current = (volts/resistance)*1000
+            current = round((volts / resistance) * 1000,1)
+
+            answer_text.value = f"Current: {current}mA"
+
+            if current < 0.1:
+                current = 0.1
+            elif current > 900:
+                current = 900
+
             current_text.value = f"{current}mA"
+            current_slider.content.value = current
+            current_slider.content.update()
 
         start_movement(current)
+
 
     def updateResistance(e):
         nonlocal resistance, volts, current
-        resistance = int(e.control.value)
+        resistance = round(e.control.value)
         resistance_text.value = f"{resistance}Ω"
         resistance_text.update()
-        if current_slider.visible == True:
-            volts = resistance*current
+
+        if current_slider.visible:
+            volts = round(resistance * (current / 1000), 1)
+
+            answer_text.value = f"Voltage: {volts}V"
+
+            if volts < 0.1:
+                volts = 0.1
+            elif volts > 9:
+                volts = 9
+
             voltage_text.value = f"{volts}V"
+            volt_slider.content.value = volts
+            volt_slider.content.update()
         else:
-            current = (volts/resistance)*1000
+            current = round((volts / resistance) * 1000,1)
+
+            answer_text.value = f"Current: {current}mA"
+
+            if current < 0.1:
+                current = 0.1
+            elif current > 900:
+                current = 900
+
             current_text.value = f"{current}mA"
+            current_slider.content.value = current
+            current_slider.content.update()
+
         start_movement(current)
+
     
     def updateCurrent(e):
         nonlocal current, resistance, volts
-        current = round(e.control.value, 2)
+        current = round(e.control.value, 1)
+
         current_text.value = f"{current}mA"
         current_text.update()
+
         if current_slider.top == 3:
-            resistance = volts/current
+            resistance = round(volts / (current / 1000))
+            
+            answer_text.value = f"Resistance: {resistance}Ω"
+
+            if resistance < 10:
+                resistance = 10
+            elif resistance > 900:
+                resistance = 900
+
             resistance_text.value = f"{resistance}Ω"
+            resistance_slider.content.value = resistance
+            resistance_slider.content.update()
         else:
-            volts = resistance*current
+            volts = round(resistance * (current / 1000), 1)
+
+            answer_text.value = f"Voltage: {volts}V"
+
+            if volts < 0.1:
+                volts = 0.1
+            elif volts > 9:
+                volts = 9
+
             voltage_text.value = f"{volts}V"
+            volt_slider.content.value = volts
+            volt_slider.content.update()
+
         start_movement(current)
+
     
     
     def switch_v(e):
@@ -106,9 +181,9 @@ def Ohm_View(router):
         white_background.visible = True
         router.update()
 
-    volt_slider = ft.Container(content=ft.Slider(min=0.1, max=9,width=275, divisions=89, label="{value}V", round=2, active_color="#ab9dd4", on_change=updateVolt),bgcolor="transparent",top=35, left=210)
-    resistance_slider = ft.Container(content=ft.Slider(min=10, max=100,width=275, divisions=89, label="{value}Ω", active_color="#ab9dd4", on_change=updateResistance),bgcolor="transparent",top=3, left=210)
-    current_slider = ft.Container(content=ft.Slider(min=10, max=900,width=275, divisions=890, label="{value}mA", round=1, active_color="#ab9dd4", on_change=updateCurrent),bgcolor="transparent",top=3, left=210, visible=False)
+    volt_slider = ft.Container(content=ft.Slider(min=0.1, max=9,value=0.1 ,width=275, divisions=89, label="{value}V", round=2, active_color="#ab9dd4", on_change=updateVolt),bgcolor="transparent",top=35, left=210)
+    resistance_slider = ft.Container(content=ft.Slider(min=10, max=1000, value=10, width=275, divisions=990, label="{value}Ω", round=1, active_color="#ab9dd4", on_change=updateResistance),bgcolor="transparent",top=3, left=210)
+    current_slider = ft.Container(content=ft.Slider(min=0.1, max=900.0, value=10,width=275, divisions=8999, label="{value}mA", round=1, active_color="#ab9dd4", on_change=updateCurrent),bgcolor="transparent",top=3, left=210, visible=False)
 
     slider_text = ft.Text("Resistance: Voltage:",weight="bold",size=22, color="black",width=135,left=85,top=11)
 
@@ -149,10 +224,10 @@ def Ohm_View(router):
     electron2 = ft.Container(
         width=20,
         height=20,
-        bgcolor=ft.Colors.BLUE,
+        bgcolor=ft.Colors.RED,
         border_radius=10,
         top=electron_path[0][1],
-        left=electron_path[0][0],
+        left=290,
         animate_position=500
     )
 
@@ -180,12 +255,19 @@ def Ohm_View(router):
 
     async def move_electron(speed):
         while True:
+            prev_x, prev_y = electron.left, electron.top
             for x, y in electron_path:
                 electron.left = x
                 electron.top = y
+
+                electron2.left = prev_x
+                electron2.top = prev_y
+
+                prev_x, prev_y = x, y
+    
                 router.update()
                 electron.animate_position = int(2000/(speed/100))
-                print(2/(speed/100))
+                electron2.animate_position = int(2000/(speed/100))
                 await asyncio.sleep(2/(speed/100))
 
 
@@ -196,17 +278,17 @@ def Ohm_View(router):
         current_task = router.run_task(move_electron, speed)
 
     
-    start_movement(current)
+    # start_movement(current)
 
 
     controls = [
+        ft.Text("Ohm's Law", size=55, weight="bold"),
         ft.Container(
             content=ft.Stack(
                 controls=[
                     ft.Container(
                         content=ft.Column(
                             controls=[
-                                ft.Text("Ohm's Law", size=55, weight="bold"),
                                 ft.Container(
                                     width=600, height=500, bgcolor="white", border=ft.border.all(5, "#201b2e"),
                                     content=ft.Column(
@@ -221,7 +303,9 @@ def Ohm_View(router):
                                                         r_text,
                                                         cable,
                                                         electron,
-                                                        battery
+                                                        electron2,
+                                                        battery,
+                                                        answer_text,
                                                     ]
                                                 )
                                             ),
@@ -237,22 +321,22 @@ def Ohm_View(router):
                                                         voltage_text,
                                                         resistance_text,
                                                         current_text,
-                                                        calculator_button,
+                                                        # calculator_button,
                                                     ]
                                                 )
                                             ),
                                         ],
                                         spacing=0
                                     ),
-                                ),
-                                BackElevatedButton("Back", lambda e: router.go('/intro'))
+                                )
                             ]
                         )
                     ),
                     white_background,
                 ]
             )
-        )
+        ),
+        BackElevatedButton("Back", lambda e: router.go('/intro'))
     ]
 
     content = ContentContainer(controls)
