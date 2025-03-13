@@ -38,12 +38,34 @@ def Ohm_View(router):
 
     white_background = ft.Container(bgcolor="white", opacity=0.9, width=800, height=800, visible=False)
 
+    def checkelecctronamount():
+        nonlocal volts
+        if volts >= 2.5:
+            electron2.visible = True
+        else:
+            electron2.visible = False
+        
+        if volts >= 5:
+            electron3.visible = True
+        else:
+            electron3.visible = False
+        
+        if volts >= 7.5:
+            electron4.visible = True
+        else:
+            electron4.visible = False
+
+        if volts >= 9:
+            electron5.visible = True
+        else:
+            electron5.visible = False
+
     def updateVolt(e):
         nonlocal volts, resistance, current
         volts = round(e.control.value, 1)
         voltage_text.value = f"{volts}V"
         voltage_text.update()
-
+        checkelecctronamount()
         if current_slider.visible:
             resistance = round(volts / (current / 1000))
 
@@ -93,6 +115,7 @@ def Ohm_View(router):
             voltage_text.value = f"{volts}V"
             volt_slider.content.value = volts
             volt_slider.content.update()
+            checkelecctronamount()
         else:
             current = round((volts / resistance) * 1000,1)
 
@@ -143,12 +166,14 @@ def Ohm_View(router):
             voltage_text.value = f"{volts}V"
             volt_slider.content.value = volts
             volt_slider.content.update()
+            checkelecctronamount()
 
         start_movement(current)
 
     
     
     def switch_v(e):
+        nonlocal volts
         v_text.content.color = "#ffae17"
         i_text.content.color = r_text.content.color = "#ab9dd4"
         volt_slider.visible = voltage_text.visible = False
@@ -156,25 +181,29 @@ def Ohm_View(router):
         current_slider.top = 35
         slider_text.value = ("Resistance: Current:")
         current_text.top = 40
+        answer_text.value = f"Voltage: {volts}V"
         router.update()
 
     def switch_i(e):
+        nonlocal current
         v_text.content.color = r_text.content.color = "#ab9dd4"
         i_text.content.color = "#ffae17"
         volt_slider.visible = resistance_slider.visible = voltage_text.visible = resistance_text.visible = True
         current_slider.visible = current_text.visible = False
         slider_text.value = ("Resistance: Voltage:")
+        answer_text.value = f"Current: {current}mA"
         router.update()
 
     def switch_r(e):
+        nonlocal resistance
         v_text.content.color = i_text.content.color = "#ab9dd4"
         r_text.content.color = "#ffae17"
         volt_slider.visible = current_slider.visible = voltage_text.visible = current_text.visible = True
         resistance_slider.visible = resistance_text.visible = False
         current_slider.top = 3
         slider_text.value = ("Current: Voltage:")
-
         current_text.top = 5
+        answer_text.value = f"Resistance: {resistance}Ω"
         router.update()
     
     def open_calculator(e):
@@ -224,11 +253,45 @@ def Ohm_View(router):
     electron2 = ft.Container(
         width=20,
         height=20,
-        bgcolor=ft.Colors.RED,
+        bgcolor=ft.Colors.BLUE,
         border_radius=10,
         top=electron_path[0][1],
         left=290,
-        animate_position=500
+        animate_position=500,
+        visible=False
+    )
+
+    electron3 = ft.Container(
+        width=20,
+        height=20,
+        bgcolor=ft.Colors.BLUE,
+        border_radius=10,
+        top=electron_path[0][1],
+        left=290,
+        animate_position=500,
+        visible=False
+    )
+
+    electron4 = ft.Container(
+        width=20,
+        height=20,
+        bgcolor=ft.Colors.BLUE,
+        border_radius=10,
+        top=electron_path[0][1],
+        left=290,
+        animate_position=500,
+        visible=False
+    )
+
+    electron5 = ft.Container(
+        width=20,
+        height=20,
+        bgcolor=ft.Colors.BLUE,
+        border_radius=10,
+        top=electron_path[0][1],
+        left=290,
+        animate_position=500,
+        visible=False
     )
 
     battery = ft.Row(
@@ -253,22 +316,74 @@ def Ohm_View(router):
 
     current_task = None
 
-    async def move_electron(speed):
-        while True:
-            prev_x, prev_y = electron.left, electron.top
-            for x, y in electron_path:
-                electron.left = x
-                electron.top = y
+    # async def move_electron(speed):
+    #     while True:
+    #         prev_x, prev_y = electron.left, electron.top
+    #         prev_x2, prev_y2 = electron2.left, electron2.top
+    #         prev_x3, prev_y3 = electron3.left, electron3.top
+    #         prev_x4, prev_y4 = electron4.left, electron4.top
+    #         prev_x5, prev_y5 = electron5.left, electron5.top
+    #         prev_x6, prev_y6 = electron6.left, electron6.top
+    #         prev_x7, prev_y7 = electron7.left, electron7.top
+    #         prev_x8, prev_y8 = electron8.left, electron8.top
+    #         prev_x9, prev_y9 = electron9.left, electron9.top
 
-                electron2.left = prev_x
-                electron2.top = prev_y
+    #         for x, y in electron_path:
+    #             electron.left = x
+    #             electron.top = y
 
-                prev_x, prev_y = x, y
+    #             electron2.left = prev_x
+    #             electron2.top = prev_y
+
+    #             electron3.left = prev_x2
+    #             electron3.top = prev_y2
+
+    #             electron4.left = prev_x3
+    #             electron4.top = prev_y3
+
+    #             electron5.left = prev_x4
+    #             electron5.top = prev_y4
+
+    #             electron6.left = prev_x5
+    #             electron6.top = prev_y5
+
+    #             electron7.left = prev_x6
+    #             electron7.top = prev_y6
+
+    #             electron8.left = prev_x7
+    #             electron8.top = prev_y7
+
+    #             electron9.left = prev_x8
+    #             electron9.top = prev_y8
+
+    #             prev_x, prev_y = x, y
+    #             prev_x2, prev_y2 = x, y
+    #             prev_x3, prev_y3 = x, y
+    #             prev_x4, prev_y4 = x, y
+    #             prev_x5, prev_y5 = x, y
+    #             prev_x6, prev_y6 = x, y
+    #             prev_x7, prev_y7 = x, y
+    #             prev_x8, prev_y8 = x, y
+    #             prev_x9, prev_y9 = x, y
     
+    
+    #             router.update()
+    #             electron.animate_position = int(2000/(speed/100))
+    #             electron2.animate_position = int(2000/(speed/100))
+    #             await asyncio.sleep(2/(speed/100))
+
+    async def move_electron(speed):
+        electrons = [electron, electron2, electron3, electron4, electron5]
+        positions = [electron_path[0]] * len(electrons)
+        while True:
+            for pos in electron_path:
+                positions.insert(0, pos)
+                positions.pop()
+                for i, e in enumerate(electrons):
+                    e.left, e.top = positions[i]
+                    e.animate_position = int(2000 / (speed / 100))
                 router.update()
-                electron.animate_position = int(2000/(speed/100))
-                electron2.animate_position = int(2000/(speed/100))
-                await asyncio.sleep(2/(speed/100))
+                await asyncio.sleep(2 / (speed / 100))
 
 
     def start_movement(speed):
@@ -278,7 +393,7 @@ def Ohm_View(router):
         current_task = router.run_task(move_electron, speed)
 
     
-    # start_movement(current)
+    start_movement(current)
 
 
     controls = [
@@ -304,6 +419,9 @@ def Ohm_View(router):
                                                         cable,
                                                         electron,
                                                         electron2,
+                                                        electron3,
+                                                        electron4,
+                                                        electron5,
                                                         battery,
                                                         answer_text,
                                                     ]
