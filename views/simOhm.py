@@ -1,6 +1,7 @@
 import flet as ft
 from objects import BackElevatedButton,ContentContainer
 import asyncio
+import random
 
 def Ohm_View(router):
 
@@ -32,40 +33,60 @@ def Ohm_View(router):
 
     answer_text = ft.Text(
         f"Current: {current}mA",size=30,weight="bold",color="black",
-        left=190,top=250,
+        left=190,top=230,
         style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
     )
 
     white_background = ft.Container(bgcolor="white", opacity=0.9, width=800, height=800, visible=False)
 
     def checkelecctronamount():
-        nonlocal volts
-        if volts >= 2.5:
+        nonlocal current
+        if current >= 225:
             electron2.visible = True
         else:
             electron2.visible = False
         
-        if volts >= 5:
+        if current >= 550:
             electron3.visible = True
         else:
             electron3.visible = False
         
-        if volts >= 7.5:
+        if current >= 775:
             electron4.visible = True
         else:
             electron4.visible = False
 
-        if volts >= 9:
+        if current >= 900:
             electron5.visible = True
         else:
             electron5.visible = False
+    
+    resistor_storage = ft.Stack()
+    
+    def add_resistance():
+        nonlocal resistance
+        resistor_storage.controls.clear()
+        num_circles_needed = int(resistance / 20)
+
+        for _ in range(num_circles_needed):
+            new_circle = ft.Container(
+                width=10,
+                height=10,
+                bgcolor=ft.Colors.BLACK,
+                border_radius=10,
+                top=random.randint(0, 45),
+                left=random.randint(0,180),
+            )
+            resistor_storage.controls.append(new_circle)
+        router.update()
+
 
     def updateVolt(e):
         nonlocal volts, resistance, current
         volts = round(e.control.value, 1)
         voltage_text.value = f"{volts}V"
         voltage_text.update()
-        checkelecctronamount()
+        start_movement(volts)
         if current_slider.visible:
             resistance = round(volts / (current / 1000))
 
@@ -79,6 +100,7 @@ def Ohm_View(router):
             resistance_text.value = f"{resistance}Ω"
             resistance_slider.content.value = resistance
             resistance_slider.content.update()
+            add_resistance()
         else:
             current = round((volts / resistance) * 1000,1)
 
@@ -92,15 +114,16 @@ def Ohm_View(router):
             current_text.value = f"{current}mA"
             current_slider.content.value = current
             current_slider.content.update()
+            checkelecctronamount()
 
-        start_movement(current)
-
-
+    
     def updateResistance(e):
         nonlocal resistance, volts, current
         resistance = round(e.control.value)
         resistance_text.value = f"{resistance}Ω"
         resistance_text.update()
+
+        add_resistance()
 
         if current_slider.visible:
             volts = round(resistance * (current / 1000), 1)
@@ -115,7 +138,7 @@ def Ohm_View(router):
             voltage_text.value = f"{volts}V"
             volt_slider.content.value = volts
             volt_slider.content.update()
-            checkelecctronamount()
+            start_movement(volts)
         else:
             current = round((volts / resistance) * 1000,1)
 
@@ -129,8 +152,8 @@ def Ohm_View(router):
             current_text.value = f"{current}mA"
             current_slider.content.value = current
             current_slider.content.update()
+            checkelecctronamount()
 
-        start_movement(current)
 
     
     def updateCurrent(e):
@@ -139,6 +162,7 @@ def Ohm_View(router):
 
         current_text.value = f"{current}mA"
         current_text.update()
+        checkelecctronamount()
 
         if current_slider.top == 3:
             resistance = round(volts / (current / 1000))
@@ -153,6 +177,7 @@ def Ohm_View(router):
             resistance_text.value = f"{resistance}Ω"
             resistance_slider.content.value = resistance
             resistance_slider.content.update()
+            add_resistance()
         else:
             volts = round(resistance * (current / 1000), 1)
 
@@ -167,8 +192,8 @@ def Ohm_View(router):
             volt_slider.content.value = volts
             volt_slider.content.update()
             checkelecctronamount()
+            start_movement(volts)
 
-        start_movement(current)
 
     
     
@@ -234,11 +259,11 @@ def Ohm_View(router):
         width=400,
         height=200,
         bgcolor=None,
-        top=180,
+        top=160,
         left=100,
     )
 
-    electron_path = [(290, 170), (490, 170), (490, 370), (90, 370), (90, 170)]
+    electron_path = [(290, 150), (490, 150), (490, 350), (90, 350), (90, 150)]
 
     electron = ft.Container(
         width=20,
@@ -310,67 +335,22 @@ def Ohm_View(router):
                 bgcolor="#706394",
                 alignment=ft.alignment.top_right
             )
-        ], top=148, left=200, spacing=0
+        ], top=128, left=200, spacing=0
+    )
+
+    resistor = ft.Container(
+        content=resistor_storage,
+        top=325, 
+        left=200, 
+        width=200,
+        height=65,
+        bgcolor="transparent",
+        border=ft.border.all(5,"#201b2e"),
+        border_radius=10,
     )
 
 
     current_task = None
-
-    # async def move_electron(speed):
-    #     while True:
-    #         prev_x, prev_y = electron.left, electron.top
-    #         prev_x2, prev_y2 = electron2.left, electron2.top
-    #         prev_x3, prev_y3 = electron3.left, electron3.top
-    #         prev_x4, prev_y4 = electron4.left, electron4.top
-    #         prev_x5, prev_y5 = electron5.left, electron5.top
-    #         prev_x6, prev_y6 = electron6.left, electron6.top
-    #         prev_x7, prev_y7 = electron7.left, electron7.top
-    #         prev_x8, prev_y8 = electron8.left, electron8.top
-    #         prev_x9, prev_y9 = electron9.left, electron9.top
-
-    #         for x, y in electron_path:
-    #             electron.left = x
-    #             electron.top = y
-
-    #             electron2.left = prev_x
-    #             electron2.top = prev_y
-
-    #             electron3.left = prev_x2
-    #             electron3.top = prev_y2
-
-    #             electron4.left = prev_x3
-    #             electron4.top = prev_y3
-
-    #             electron5.left = prev_x4
-    #             electron5.top = prev_y4
-
-    #             electron6.left = prev_x5
-    #             electron6.top = prev_y5
-
-    #             electron7.left = prev_x6
-    #             electron7.top = prev_y6
-
-    #             electron8.left = prev_x7
-    #             electron8.top = prev_y7
-
-    #             electron9.left = prev_x8
-    #             electron9.top = prev_y8
-
-    #             prev_x, prev_y = x, y
-    #             prev_x2, prev_y2 = x, y
-    #             prev_x3, prev_y3 = x, y
-    #             prev_x4, prev_y4 = x, y
-    #             prev_x5, prev_y5 = x, y
-    #             prev_x6, prev_y6 = x, y
-    #             prev_x7, prev_y7 = x, y
-    #             prev_x8, prev_y8 = x, y
-    #             prev_x9, prev_y9 = x, y
-    
-    
-    #             router.update()
-    #             electron.animate_position = int(2000/(speed/100))
-    #             electron2.animate_position = int(2000/(speed/100))
-    #             await asyncio.sleep(2/(speed/100))
 
     async def move_electron(speed):
         electrons = [electron, electron2, electron3, electron4, electron5]
@@ -381,9 +361,9 @@ def Ohm_View(router):
                 positions.pop()
                 for i, e in enumerate(electrons):
                     e.left, e.top = positions[i]
-                    e.animate_position = int(2000 / (speed / 100))
+                    e.animate_position = int(2000 / (speed / 0.9))
                 router.update()
-                await asyncio.sleep(2 / (speed / 100))
+                await asyncio.sleep(2 / (speed / 0.9))
 
 
     def start_movement(speed):
@@ -393,7 +373,7 @@ def Ohm_View(router):
         current_task = router.run_task(move_electron, speed)
 
     
-    start_movement(current)
+    start_movement(volts)
 
 
     controls = [
@@ -417,6 +397,7 @@ def Ohm_View(router):
                                                         i_text,
                                                         r_text,
                                                         cable,
+                                                        resistor,
                                                         electron,
                                                         electron2,
                                                         electron3,
