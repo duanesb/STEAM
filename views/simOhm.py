@@ -345,7 +345,7 @@ def Ohm_View(router):
         width=200,
         height=65,
         bgcolor="transparent",
-        border=ft.border.all(5,"#201b2e"),
+        border=ft.border.all(3,"#201b2e"),
         border_radius=10,
     )
 
