@@ -37,7 +37,13 @@ def Ohm_View(router):
         style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE),
     )
 
-    white_background = ft.Container(bgcolor="white", opacity=0.9, width=800, height=800, visible=False)
+    white_background = ft.Container(bgcolor="white", opacity=0.9, width=800, height=800, visible=False, top=0, left=0)
+
+    ohm_info = ft.Container(
+        content=ft.Icon(name=ft.Icons.INFO_OUTLINE, tooltip="Ohm’s Law defines the relationship between three fundamental electrical properties: voltage, current, and resistance. Voltage is the potential difference that pushes electric charges through a conductor, driving the flow of current. Current refers to the flow of electric charge, which is measured in amperes (A). Resistance is the property of a material that resists the flow of electric current, measured in ohms (Ω). The law states that the voltage across a conductor is directly proportional to the current passing through it and inversely proportional to its resistance. Understanding this relationship allows us to predict how electrical circuits will behave under different conditions and is fundamental to the design and analysis of electronic systems.", size=30, color="#706394"),
+        left=565,
+        top=5,
+    )
 
     def checkelecctronamount():
         nonlocal current
@@ -194,9 +200,6 @@ def Ohm_View(router):
             checkelecctronamount()
             start_movement(volts)
 
-
-    
-    
     def switch_v(e):
         nonlocal volts
         v_text.content.color = "#ffae17"
@@ -345,10 +348,9 @@ def Ohm_View(router):
         width=200,
         height=65,
         bgcolor="transparent",
-        border=ft.border.all(5,"#201b2e"),
+        border=ft.border.all(3,"#201b2e"),
         border_radius=10,
     )
-
 
     current_task = None
 
@@ -372,9 +374,7 @@ def Ohm_View(router):
             current_task.cancel()
         current_task = router.run_task(move_electron, speed)
 
-    
     start_movement(volts)
-
 
     controls = [
         ft.Text("Ohm's Law", size=55, weight="bold"),
@@ -432,6 +432,8 @@ def Ohm_View(router):
                         )
                     ),
                     white_background,
+                    ohm_info,
+
                 ]
             )
         ),
