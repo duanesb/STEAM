@@ -14,7 +14,6 @@ def Capacitance_View(router):
     plateSeparation = 0.01
     plateArea = 0.01
     epsilon0 = 8.854e-12
-
     minOpacityValue = 1.5
     maxOpacityValue = 50
 
@@ -64,21 +63,72 @@ def Capacitance_View(router):
         capacitance = calculateCapacitance()
         return 0.5 * capacitance * (voltage ** 2)
 
+    def updateElectricFieldLines():
+        field_lines = []
+        
+        if voltage != 0 and plateSeparation >= 2.02:
+            num_lines = max(3, int(plateContainer.width / 20))
+            
+            top_plate_bottom = plateContainer.top + plateHeight
+            bottom_plate_top = secondPlateContainer.top
+            field_height = abs(bottom_plate_top - top_plate_bottom)
+            
+            arrow_count = max(3, int(field_height / 25))
+            arrow_size = 12
+            arrow_color = "#ff3333" if voltage > 0 else "#3333ff"
+            
+            spacing = plateContainer.width / (num_lines - 1) if num_lines > 1 else 0
+            
+            for i in range(num_lines):
+                x_pos = plateContainer.left + (i * spacing)
+                
+                field_line = ft.Container(
+                    width=1.5,
+                    height=field_height,
+                    left=x_pos,
+                    top=top_plate_bottom,
+                    bgcolor=arrow_color,
+                    opacity=0.8,
+                    border_radius=ft.border_radius.all(1)
+                )
+                field_lines.append(field_line)
+                
+                for j in range(1, arrow_count):
+                    arrow_y = top_plate_bottom + j * (field_height/arrow_count)
+                    
+                    arrow = ft.Container(
+                        width=arrow_size,
+                        height=arrow_size,
+                        left=x_pos - arrow_size/2 + 0.75,
+                        top=arrow_y - arrow_size/2,
+                        content=ft.Icon(
+                            name=ft.icons.ARROW_DROP_DOWN if voltage > 0 else ft.icons.ARROW_DROP_UP,
+                            color=arrow_color,
+                            size=arrow_size,
+                            opacity=0.9
+                        )
+                    )
+                    field_lines.append(arrow)
+        
+        return field_lines
+
     def updateReadings():
         nonlocal voltage
         capacitance = calculateCapacitance()
         topPlateCharge = calculateTopPlateCharge()
         storedEnergy = calculateStoredEnergy()
-
+        
         readingCapacitance.set(f"{capacitance:.2e}F")
         readingTopPlateCharge.set(f"{topPlateCharge:.2e}C")
         readingStoredEnergy.set(f"{storedEnergy:.2e}J")
 
     def updateVoltage(e):
         nonlocal voltage
-        voltage = int(e.control.value)
-        readingVoltage.set(f"{voltage}V")
+        slider_value = int(e.control.value)
+        voltage = -1.5 + (slider_value * (3.0 / 20))
+        readingVoltage.set(f"{voltage:.2f}V")
         updateReadings()
+        updateMainStack()
 
     def updatePlateSeparation(e):
         nonlocal plateSeparation
@@ -90,6 +140,7 @@ def Capacitance_View(router):
         plateContainer.update()
         secondPlateContainer.update()
         updateReadings()
+        updateMainStack()
 
     def updatePlateArea(e):
         nonlocal plateArea
@@ -97,26 +148,31 @@ def Capacitance_View(router):
         readingPlateArea.set(f"{plateArea:.2f}mm²")
         initialArea = 100
         scalingFactor = np.sqrt(plateArea / initialArea)
-        newWidth = plateWidth * scalingFactor
-        newHeight = plateHeight * scalingFactor
+        newWidth = max(60, min(300, plateWidth * scalingFactor))
         plateContainer.width = newWidth
-        plateContainer.height = newHeight
         secondPlateContainer.width = newWidth
-        secondPlateContainer.height = newHeight
         plateContainer.left = 300 - newWidth / 2
         secondPlateContainer.left = 300 - newWidth / 2
         plateContainer.update()
         secondPlateContainer.update()
         updateReadings()
+        updateMainStack()
 
-    def textFieldChange(e, left=None, top=None):
-        pass
+    def updateMainStack():
+        main_stack.controls = [
+            *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
+            plateContainer,
+            secondPlateContainer,
+            *updateElectricFieldLines(),
+            anchorSim
+        ]
+        main_stack.update()
 
     plateContainer = ft.Container(
         width=plateWidth,
         height=plateHeight,
         left=300 - plateWidth / 2,
-        top=260 - plateHeight / 2 - (plateSeparation * 100 * 20) / 2,  # Initial position
+        top=260 - plateHeight / 2 - (plateSeparation * 100 * 20) / 2,
         border=ft.border.all(5, "black"),
         bgcolor="grey"
     )
@@ -125,12 +181,12 @@ def Capacitance_View(router):
         width=plateWidth,
         height=plateHeight,
         left=300 - plateWidth / 2,
-        top=200 - plateHeight / 2 + (plateSeparation * 100 * 20) / 2,  # Initial position
+        top=200 - plateHeight / 2 + (plateSeparation * 100 * 20) / 2,
         border=ft.border.all(5, "black"),
         bgcolor="grey"
     )
 
-    # CREATES POINTERS
+    # Create pointers
     for row in range(rows):
         pointers.append([])
         for column in range(columns):
@@ -145,15 +201,10 @@ def Capacitance_View(router):
             pointers[row][column]["container"].bgcolor = f"white,{changes['opacity']}"
             pointers[row][column]["container"].rotate = ft.transform.Rotate(changes["electricFieldDirection"] + np.pi)
 
-    # ANCHOR ELEMENTS
     anchorContainer = ft.Container(
         width=25, height=25, bgcolor="#f5e267",
         border_radius=ft.border_radius.all(30),
         border=ft.border.all(3, "#fce865"),
-    )
-    anchorMenu = ft.Container(
-        content=anchorContainer,
-        left=45, top=50,
     )
     anchorSim = ft.GestureDetector(
         visible=False,
@@ -162,14 +213,24 @@ def Capacitance_View(router):
         drag_interval=10,
     )
 
-    # READING CONTAINERS
-    readingVoltage = ContainerReading(60, 90, 20, "0V")
+    # Main stack
+    main_stack = ft.Stack(
+        controls=[
+            *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
+            plateContainer,
+            secondPlateContainer,
+            *updateElectricFieldLines(),
+            anchorSim
+        ]
+    )
+
+    # Reading containers
+    readingVoltage = ContainerReading(60, 90, 20, "0.00V")
     readingPlateSeparation = ContainerReading(60, 90, 55, "1.00mm")
     readingPlateArea = ContainerReading(60, 230, 20, "100.00mm²")
     readingCapacitance = ContainerReading(60, 470, 10)
     readingTopPlateCharge = ContainerReading(60, 470, 33)
     readingStoredEnergy = ContainerReading(60, 470, 56)
-    readingElectricField = ContainerReading(87, 495, 10)
 
     controls = [
         ft.Text("Capacitance Simulator", size=55, weight="bold"),
@@ -179,25 +240,21 @@ def Capacitance_View(router):
                 controls=[
                     ft.Container(
                         width=600, height=400, bgcolor="black", margin=0, padding=0,
-                        content=ft.Stack(
-                            controls=[
-                                *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
-                                plateContainer,
-                                secondPlateContainer,
-                                anchorSim
-                            ]
-                        )
+                        content=main_stack
                     ),
                     ft.Container(width=600, height=90, bgcolor="#706394", border=ft.border.only(top=ft.BorderSide(5, "black")),
                         content=ft.Stack(
                             controls=[
-
                                 ContainerText("Voltage", 9, 8, 10),
                                 ft.Slider(
-                                    min=1, max=20,
+                                    min=0, 
+                                    max=20,
+                                    value=10,
                                     width=100,
-                                    left=-7, top=11,
-                                    active_color="#ab9dd4", on_change=updateVoltage
+                                    left=-7, 
+                                    top=11,
+                                    active_color="#ab9dd4", 
+                                    on_change=updateVoltage
                                 ),
                                 readingVoltage,
 
