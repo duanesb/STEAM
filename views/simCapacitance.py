@@ -135,7 +135,7 @@ def Capacitance_View(router):
         plateSeparation = float(e.control.value)
         readingPlateSeparation.set(f"{plateSeparation:.2f}mm")
         centerY = 200
-        plateContainer.top = centerY - (plateSeparation * 20) / 2
+        plateContainer.top = centerY - (plateSeparation * 25) / 2
         secondPlateContainer.top = centerY + (plateSeparation * 20) / 2
         plateContainer.update()
         secondPlateContainer.update()
