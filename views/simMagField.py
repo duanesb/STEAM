@@ -21,7 +21,7 @@ def Magnetic_View(router):
         nonlocal minOpacityValue,maxOpacityValue
         # UNITS
         pfs = 1.25663706e-06
-        area = 0.0001
+        area = 1e-04
         magCharge = ((rawMagStrength/1000)/pfs)*area
 
         # CONVERSIONS (40px = 1cm, 1cm = 0.01m, 40px = 0.00025m)
