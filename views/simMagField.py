@@ -21,7 +21,7 @@ def Magnetic_View(router):
         nonlocal minOpacityValue,maxOpacityValue
         # UNITS
         pfs = 1.25663706e-06
-        area = 0.0001
+        area = 1e-04
         magCharge = ((rawMagStrength/1000)/pfs)*area
 
         # CONVERSIONS (40px = 1cm, 1cm = 0.01m, 40px = 0.00025m)
@@ -45,8 +45,8 @@ def Magnetic_View(router):
         radiusPointerSouth = np.linalg.norm(distPointerSouth)
 
         # MAGNETIC FLUX DENSITY (B)
-        bNorth = (pfs/(4*np.pi)) * (magCharge*distPointerNorth/(radiusPointerNorth**3))
-        bSouth = -(pfs/(4*np.pi)) * (magCharge*distPointerSouth/(radiusPointerSouth**3))
+        bNorth = (pfs/(4*np.pi))*(magCharge/(radiusPointerNorth**2))*(distPointerNorth/radiusPointerNorth)
+        bSouth = -((pfs/(4*np.pi))*(magCharge/(radiusPointerSouth**2))*(distPointerSouth/radiusPointerSouth))
         bNetCoords = bNorth + bSouth
         bNetRadius = np.linalg.norm(bNetCoords)
 
