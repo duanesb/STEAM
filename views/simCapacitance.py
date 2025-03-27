@@ -135,8 +135,10 @@ def Capacitance_View(router):
         plateSeparation = float(e.control.value)
         readingPlateSeparation.set(f"{plateSeparation:.2f}mm")
         centerY = 200
-        plateContainer.top = centerY - (plateSeparation * 25) / 2
-        secondPlateContainer.top = centerY + (plateSeparation * 20) / 2
+        max_separation = 16.35
+        effective_separation = min(plateSeparation, max_separation)
+        plateContainer.top = centerY - (effective_separation * 25) / 2
+        secondPlateContainer.top = centerY + (effective_separation * 20) / 2        
         plateContainer.update()
         secondPlateContainer.update()
         updateReadings()
@@ -213,7 +215,6 @@ def Capacitance_View(router):
         drag_interval=10,
     )
 
-    # Main stack
     main_stack = ft.Stack(
         controls=[
             *[pointers[row][column]["container"] for row in range(rows) for column in range(columns)],
@@ -260,7 +261,7 @@ def Capacitance_View(router):
 
                                 ContainerText("Plate Separation", 9, 8, 45),
                                 ft.Slider(
-                                    min=1, max=20,
+                                    min=1, max=16.35,
                                     width=100,
                                     left=-7, top=48,
                                     active_color="#ab9dd4", on_change=updatePlateSeparation
@@ -270,7 +271,7 @@ def Capacitance_View(router):
                                 ft.Slider(
                                     min=100, max=1000,
                                     width=100,
-                                    left=145, top=11,
+                                    left=140, top=11,
                                     active_color="#ab9dd4", on_change=updatePlateArea
                                 ),
                                 readingPlateArea,
