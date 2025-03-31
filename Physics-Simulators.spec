@@ -1,12 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets')],
-    hiddenimports=[],
+    datas=[('assets/*', 'assets')],  # Ensure assets are included
+    hiddenimports=['flet', 'asyncio', 'httpx', 'websockets'],  # Ensure Flet dependencies are included
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -14,6 +13,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -26,13 +26,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=False,  # Ensures it's a GUI app
     disable_windowed_traceback=False,
-    argv_emulation=True,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
@@ -42,6 +42,7 @@ coll = COLLECT(
     upx_exclude=[],
     name='Physics Simulators',
 )
+
 app = BUNDLE(
     coll,
     name='Physics Simulators.app',
